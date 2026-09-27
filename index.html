@@ -3,22 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Calculadora de Dieta</title>
-<meta name="theme-color" content="#16a34a">
+<title>Registro de Gym</title>
+<meta name="theme-color" content="#ea580c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Gym">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <style>
   :root {
-    --bg: #f5f7f5; --card: #ffffff; --text: #1a1f1c; --muted: #6b7570;
-    --border: #dfe5e1; --accent: #16a34a; --accent-soft: #e7f6ec; --danger: #dc2626;
-    --p: #2563eb; --c: #d97706; --f: #db2777; --k: #16a34a;
+    --bg: #f6f5f4; --card: #ffffff; --text: #1f1a17; --muted: #72695f;
+    --border: #e4dfda; --accent: #ea580c; --on-accent: #ffffff; --accent-soft: #fdeee4;
+    --danger: #dc2626; --ok: #16a34a; --ok-soft: #e7f6ec; --gold: #ca8a04;
+    --h1: #fdd8bf; --h2: #fbac78; --h3: #f47b35; --h4: #c2410c;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #0f1311; --card: #181d1a; --text: #e8ece9; --muted: #9aa49f;
-      --border: #2a322d; --accent: #22c55e; --accent-soft: #15291d; --danger: #f87171;
-      --p: #60a5fa; --c: #fbbf24; --f: #f472b6; --k: #22c55e;
+      --bg: #12100f; --card: #1c1917; --text: #ede9e6; --muted: #a39a92;
+      --border: #2f2a26; --accent: #fb923c; --on-accent: #1c1006; --accent-soft: #2e1d10;
+      --danger: #f87171; --ok: #4ade80; --ok-soft: #14291c; --gold: #facc15;
+      --h1: #4a2511; --h2: #7c3a12; --h3: #c2570f; --h4: #fb923c;
     }
   }
   * { box-sizing: border-box; }
@@ -26,10 +30,12 @@
     margin: 0; background: var(--bg); color: var(--text);
     font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     padding-bottom: calc(72px + env(safe-area-inset-bottom));
+    -webkit-tap-highlight-color: transparent;
   }
   header {
     position: sticky; top: 0; z-index: 5; background: var(--card);
     border-bottom: 1px solid var(--border); padding: 12px 16px;
+    padding-top: calc(12px + env(safe-area-inset-top));
     display: flex; align-items: center; justify-content: space-between; gap: 8px;
   }
   header h1 { margin: 0; font-size: 18px; }
@@ -41,14 +47,14 @@
   }
   nav button {
     flex: 1; border: 0; background: none; color: var(--muted); padding: 10px 4px;
-    font-size: 13px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px;
+    font-size: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px;
   }
   nav button span { font-size: 20px; }
   nav button.active { color: var(--accent); font-weight: 600; }
   @media (min-width: 820px) {
     body { padding-bottom: 0; }
     nav { position: sticky; top: 53px; bottom: auto; border-top: 0; border-bottom: 1px solid var(--border); justify-content: center; }
-    nav button { flex: 0 0 160px; flex-direction: row; justify-content: center; gap: 6px; font-size: 15px; }
+    nav button { flex: 0 0 150px; flex-direction: row; justify-content: center; gap: 6px; font-size: 15px; }
     nav button span { font-size: 16px; }
   }
   .card {
@@ -56,1065 +62,746 @@
     padding: 14px; margin-bottom: 14px;
   }
   .card h2 { margin: 0 0 10px; font-size: 16px; }
+  .card h3 { margin: 14px 0 4px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .card h3:first-of-type { margin-top: 4px; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin: 20px 2px 10px; }
+  .section-head h2 { margin: 0; font-size: 16px; }
   .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
-  label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); flex: 1; min-width: 70px; }
+  .row.center { align-items: center; }
+  label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); flex: 1; min-width: 110px; }
   label.wide { flex: 3; min-width: 160px; }
   input, select {
     font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--border);
     border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0;
   }
   input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  input.title {
+    font-weight: 700; font-size: 17px; border-color: transparent; background: transparent; padding: 4px 6px; margin-left: -6px;
+  }
+  input.title:focus { background: var(--bg); }
+  input.plain { border-color: transparent; background: transparent; padding: 5px 6px; margin-left: -6px; font-weight: 600; }
+  input.plain:focus { background: var(--bg); }
   button.btn {
     font: inherit; border: 0; border-radius: 8px; padding: 9px 14px; cursor: pointer;
-    background: var(--accent); color: #fff; font-weight: 600; white-space: nowrap;
+    background: var(--accent); color: var(--on-accent); font-weight: 600; white-space: nowrap;
   }
   button.btn.ghost { background: var(--accent-soft); color: var(--accent); }
   button.btn.small { padding: 6px 10px; font-size: 13px; }
+  button.btn.block { width: 100%; }
   button.icon {
-    border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 18px;
-    padding: 4px 8px; border-radius: 6px; line-height: 1;
+    border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 17px;
+    padding: 4px 7px; border-radius: 6px; line-height: 1; flex: none;
   }
   button.icon:hover { background: var(--bg); color: var(--danger); }
   button.icon.edit:hover { color: var(--accent); }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+  .empty { color: var(--muted); text-align: center; padding: 18px 8px; font-size: 14px; }
+  .chip {
+    display: inline-block; font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-soft);
+    border-radius: 999px; padding: 1px 8px; white-space: nowrap;
+  }
   .list { display: flex; flex-direction: column; }
   .item {
-    display: flex; align-items: center; gap: 8px; padding: 9px 0;
-    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 6px; padding: 8px 0;
+    border-bottom: 1px solid var(--border); flex-wrap: wrap;
   }
   .item:last-child { border-bottom: 0; }
-  .item .name { flex: 1; min-width: 0; }
+  .item .name { flex: 1; min-width: 130px; }
   .item .name b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .item input.g { width: 78px; text-align: right; padding: 6px 8px; }
-  .macros { font-size: 12px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
-  .k { color: var(--k); } .p { color: var(--p); } .c { color: var(--c); } .f { color: var(--f); }
-  .totals { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .tot { background: var(--bg); border-radius: 10px; padding: 8px; text-align: center; }
-  .tot .v { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .tot .l { font-size: 11px; color: var(--muted); }
-  .tot .t { font-size: 11px; color: var(--muted); }
-  .bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 5px; overflow: hidden; }
-  .bar i { display: block; height: 100%; }
-  .meal-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .meal-head input { font-weight: 600; font-size: 16px; border-color: transparent; background: transparent; padding: 4px 6px; }
-  .meal-head input:focus { border-color: var(--border); background: var(--bg); }
-  .meal-sum { font-size: 12px; margin: 8px 0; display: flex; gap: 10px; flex-wrap: wrap; font-weight: 600; }
-  .add-row { display: flex; gap: 6px; margin-top: 8px; }
-  .add-row select { flex: 1; }
-  .add-row input { width: 80px; flex: none; }
-  .empty { color: var(--muted); font-size: 13px; padding: 6px 0; }
-  .muted { color: var(--muted); font-size: 13px; }
-  .search { margin-bottom: 8px; }
-  .hidden { display: none !important; }
-  .stepper { display: flex; align-items: center; gap: 8px; }
-  .stepper b { min-width: 24px; text-align: center; font-size: 18px; }
-  .toast {
-    position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
-    background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 8px;
-    font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20;
-  }
-  .toast.show { opacity: 1; }
+  .item .ctrl { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+  .item input.sm { width: 48px; text-align: center; padding: 6px 4px; }
+  .item input.md { width: 66px; text-align: center; padding: 6px 4px; }
+  .item select.msel { width: auto; max-width: 140px; padding: 6px 8px; font-size: 13px; }
+  .u { font-size: 12px; color: var(--muted); }
 
-  /* ---------- Registro ---------- */
-  .seg { display: inline-flex; background: var(--bg); border-radius: 8px; padding: 2px; gap: 2px; }
-  .seg button { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
-  .seg button.on { background: var(--card); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
-  .chart-wrap { position: relative; margin-top: 10px; touch-action: pan-y; }
-  .chart-wrap svg { display: block; width: 100%; overflow: visible; }
-  .chart-wrap .axis text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-  .chart-wrap .grid line { stroke: var(--border); stroke-width: 1; }
-  .chart-tip {
-    position: absolute; pointer-events: none; background: var(--card); border: 1px solid var(--border);
-    border-radius: 8px; padding: 6px 9px; font-size: 12px; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,.15);
-    transform: translate(-50%, -100%); top: 0;
+  /* Barra de fecha */
+  .datebar { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+  .datebar .nav { font-size: 26px; padding: 4px 12px; color: var(--text); }
+  .datepick {
+    position: relative; flex: 1; text-align: center; color: var(--text); font-size: 13px;
+    display: flex; flex-direction: column; align-items: center; gap: 0; min-width: 0;
   }
-  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 8px; }
-  .legend i { display: inline-block; vertical-align: middle; margin-right: 5px; }
-  .status { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
-  .status.ok { background: var(--accent-soft); color: var(--accent); }
-  .status.low { background: rgba(217,119,6,.14); color: var(--c); }
-  .status.high { background: rgba(220,38,38,.12); color: var(--danger); }
-  .status.na { background: var(--bg); color: var(--muted); }
-  table.weeks { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
-  table.weeks th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 6px 4px; border-bottom: 1px solid var(--border); }
-  table.weeks td { padding: 8px 4px; border-bottom: 1px solid var(--border); }
-  table.weeks tr:last-child td { border-bottom: 0; }
-  table.weeks .r { text-align: right; }
-  /* ---------- Recetas ---------- */
-  .rtoggle { border: 0; background: none; color: var(--accent); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; padding: 3px 0 0; }
-  .recipe-preview { background: var(--bg); border-radius: 8px; padding: 8px 10px; margin: 0 0 8px; font-size: 13px; }
-  .recipe-preview .ing { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--border); }
-  .recipe-preview .ing:last-child { border-bottom: 0; }
-  .recipe-preview .ing .macros { justify-content: flex-end; }
-  .unit { flex: none; align-self: center; font-size: 13px; color: var(--muted); min-width: 26px; }
-  .editor { background: var(--bg); border-radius: 10px; padding: 12px; margin: 10px 0; }
-  .editor input, .editor select { background: var(--card); }
+  .datepick b { font-size: 18px; }
+  .datepick span { color: var(--muted); }
+  .datepick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-  /* ---------- Días del planificador ---------- */
-  .days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
-  .chip {
-    flex: none; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; font-size: 14px;
-    border-radius: 10px; padding: 6px 12px; cursor: pointer; text-align: left; line-height: 1.2;
+  /* Elegir entreno */
+  .pick {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;
+    font: inherit; color: var(--text); text-align: left; cursor: pointer;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
   }
-  .chip small { display: block; font-size: 11px; color: var(--muted); }
-  .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
-  .chip.add { color: var(--accent); font-weight: 600; border-style: dashed; }
-  .copy-panel { background: var(--bg); border-radius: 10px; padding: 10px; margin-bottom: 8px; }
-  .copy-panel select { background: var(--card); margin: 6px 0 8px; }
+  .pick small { color: var(--accent); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  .pick b { font-size: 16px; }
+  .pick span { color: var(--muted); font-size: 13px; }
+  .pick.main { border: 2px solid var(--accent); background: var(--accent-soft); }
 
-  @media (max-width: 500px) { #wStats { grid-template-columns: repeat(2, 1fr); } }
-  .advice { background: var(--bg); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin-top: 10px; }
+  /* Sesión */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+  .stat { background: var(--bg); border-radius: 10px; padding: 8px; text-align: center; }
+  .stat b { display: block; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 11px; color: var(--muted); }
+  .ex-head { display: flex; align-items: flex-start; gap: 4px; }
+  .ex-head .name { flex: 1; min-width: 0; }
+  .ex-head .name b { font-size: 16px; margin-right: 6px; }
+  .tgt { font-size: 12px; color: var(--muted); margin-left: 4px; white-space: nowrap; }
+  .last { font-size: 13px; color: var(--muted); margin: 6px 0 8px; }
+  .last b { color: var(--text); font-weight: 600; }
+  .set {
+    display: grid; grid-template-columns: 22px minmax(0,1fr) 20px minmax(0,1fr) 30px 22px 36px 30px;
+    align-items: center; gap: 4px; padding: 4px 0;
+  }
+  .set .n {
+    font-size: 12px; font-weight: 700; color: var(--muted); text-align: center;
+    width: 22px; height: 22px; line-height: 22px; border-radius: 50%; background: var(--bg);
+  }
+  .set.ok .n { background: var(--ok-soft); color: var(--ok); }
+  .set input { text-align: center; padding: 8px 4px; font-size: 16px; font-variant-numeric: tabular-nums; }
+  .set.ok input { border-color: var(--ok); }
+  .set .pr { font-size: 15px; text-align: center; }
+  .set .okb { font-size: 16px; color: var(--ok); background: var(--ok-soft); padding: 7px 0; }
+  .set .okb:hover { color: var(--ok); }
+  .ex-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+
+  /* Calendario mensual */
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; max-width: 380px; margin: 0 auto; }
+  .cal .dh { font-size: 11px; color: var(--muted); text-align: center; font-weight: 600; }
+  .cal .d {
+    aspect-ratio: 1; border-radius: 6px; background: var(--bg); border: 1px solid var(--border);
+    font-size: 11px; color: var(--muted); display: flex; align-items: flex-start; justify-content: flex-end;
+    padding: 3px 5px; cursor: pointer; font-variant-numeric: tabular-nums;
+  }
+  .cal .d.l1 { background: var(--h1); border-color: var(--h1); color: var(--text); }
+  .cal .d.l2 { background: var(--h2); border-color: var(--h2); color: var(--text); }
+  .cal .d.l3 { background: var(--h3); border-color: var(--h3); color: #fff; }
+  .cal .d.l4 { background: var(--h4); border-color: var(--h4); color: #fff; }
+  .cal .d.plan { border: 1.5px dashed var(--accent); }
+  .cal .d.today { outline: 2px solid var(--text); outline-offset: 1px; }
+  .cal .d.future { opacity: .55; }
+  .heat-leg { display: flex; align-items: center; justify-content: flex-end; gap: 3px; font-size: 11px; color: var(--muted); margin-top: 10px; }
+  .heat-leg i { width: 12px; height: 12px; border-radius: 3px; background: var(--bg); border: 1px solid var(--border); }
+  /* Progreso */
+  .weeknav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .weeknav b { font-size: 14px; }
+  .vrow { display: grid; grid-template-columns: 138px 1fr 54px; align-items: center; gap: 8px; padding: 5px 0; font-size: 13px; }
+  .vrow .v { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+  .vrow .v b { color: var(--text); }
+  .vbar { position: relative; height: 10px; background: var(--bg); border-radius: 5px; }
+  .vbar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--accent); }
+  .vbar i.done { background: var(--ok); }
+  .vbar em { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text); opacity: .55; border-radius: 1px; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 8px; flex-wrap: wrap; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+  .seg { display: flex; background: var(--bg); border-radius: 8px; padding: 3px; gap: 2px; margin: 10px 0; }
+  .seg button {
+    flex: 1; font: inherit; font-size: 12px; border: 0; background: none; color: var(--muted);
+    padding: 6px 2px; border-radius: 6px; cursor: pointer;
+  }
+  .seg button.active { background: var(--card); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .kpi { background: var(--bg); border-radius: 10px; padding: 8px; }
+  .kpi b { display: block; font-size: 17px; font-variant-numeric: tabular-nums; }
+  .kpi span { font-size: 11px; color: var(--muted); }
+  svg.chart { width: 100%; height: auto; display: block; }
+  svg.chart text { font-size: 10px; fill: var(--muted); font-family: inherit; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-weight: 600; color: var(--muted); font-size: 11px; padding: 4px 4px; border-bottom: 1px solid var(--border); }
+  td { padding: 6px 4px; border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: 0; }
+  .hist { cursor: pointer; }
+  .hist:hover b { color: var(--accent); }
+
+  #toast {
+    position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom)); transform: translateX(-50%);
+    background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 14px;
+    opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; white-space: nowrap;
+  }
+  #toast.show { opacity: 1; }
+  @media (max-width: 380px) {
+    main { padding: 12px; }
+    .vrow { grid-template-columns: 118px 1fr 48px; font-size: 12px; }
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>🥗 Dieta</h1>
-  <div class="row">
-    <button class="btn ghost small" id="btnExport" title="Guardar copia en un archivo">⬇ Exportar</button>
-    <button class="btn ghost small" id="btnImport" title="Cargar copia desde un archivo">⬆ Importar</button>
-    <input type="file" id="fileImport" accept="application/json,.json" class="hidden">
-  </div>
+  <h1>🏋️ Gym</h1>
+  <button class="icon edit" data-act="tab" data-tab="datos" title="Copia de seguridad" aria-label="Copia de seguridad">💾</button>
 </header>
-
 <nav>
-  <button data-tab="foods" class="active"><span>🍎</span>Alimentos</button>
-  <button data-tab="calc"><span>🧮</span>Calculadora</button>
-  <button data-tab="plan"><span>📅</span>Planificador</button>
-  <button data-tab="log"><span>⚖️</span>Registro</button>
+  <button data-act="tab" data-tab="hoy"><span>📝</span>Entreno</button>
+  <button data-act="tab" data-tab="plan"><span>📅</span>Plan</button>
+  <button data-act="tab" data-tab="ej"><span>💪</span>Ejercicios</button>
+  <button data-act="tab" data-tab="prog"><span>📈</span>Progreso</button>
 </nav>
-
-<main>
-  <!-- ALIMENTOS -->
-  <section id="tab-foods">
-    <div class="card">
-      <h2 id="foodFormTitle">Añadir alimento <span class="muted">(valores por 100 g)</span></h2>
-      <form id="foodForm" class="row" autocomplete="off">
-        <label class="wide">Nombre<input id="fName" required placeholder="Ej: Arroz blanco"></label>
-        <label><span class="p">Proteína g</span><input id="fP" type="number" step="any" min="0" inputmode="decimal" required></label>
-        <label><span class="c">Carbos g</span><input id="fC" type="number" step="any" min="0" inputmode="decimal" required></label>
-        <label><span class="f">Grasa g</span><input id="fF" type="number" step="any" min="0" inputmode="decimal" required></label>
-        <label><span class="k">Kcal</span><input id="fK" type="number" step="any" min="0" inputmode="decimal" placeholder="auto"></label>
-        <button class="btn" type="submit" id="foodSubmit">Añadir</button>
-        <button class="btn ghost hidden" type="button" id="foodCancel">Cancelar</button>
-      </form>
-      <p class="muted" style="margin:8px 0 0">Si dejas las kcal vacías se calculan solas (4·P + 4·C + 9·G).</p>
-    </div>
-    <div class="card">
-      <h2>Mis alimentos <span class="muted" id="foodCount"></span></h2>
-      <input class="search" id="foodSearch" placeholder="🔍 Buscar...">
-      <div class="list" id="foodList"></div>
-    </div>
-    <div class="card">
-      <div class="row" style="justify-content:space-between;align-items:center">
-        <h2 style="margin:0">📖 Mis recetas <span class="muted" id="recipeCount"></span></h2>
-        <button class="btn small" id="recipeNew">+ Nueva receta</button>
-      </div>
-      <div class="editor hidden" id="recipeEditor"></div>
-      <div class="list" id="recipeList" style="margin-top:6px"></div>
-    </div>
-  </section>
-
-  <!-- CALCULADORA -->
-  <section id="tab-calc" class="hidden">
-    <div class="card">
-      <h2>Calculadora rápida</h2>
-      <div class="add-row">
-        <select id="calcFood"></select>
-        <input id="calcG" type="number" min="0" step="any" inputmode="decimal" placeholder="g" value="100">
-        <span class="unit">g</span>
-        <button class="btn" id="calcAdd">+</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="list" id="calcList"></div>
-    </div>
-    <div class="card">
-      <h2>Total</h2>
-      <div class="totals" id="calcTotals"></div>
-      <div style="margin-top:10px"><button class="btn ghost small" id="calcClear">Vaciar calculadora</button></div>
-    </div>
-  </section>
-
-  <!-- PLANIFICADOR -->
-  <section id="tab-plan" class="hidden">
-    <div class="card">
-      <div class="days" id="dayTabs"></div>
-      <div class="row" style="margin-top:10px;align-items:center">
-        <label class="wide">Nombre del día<input id="dayName" placeholder="Ej: Lunes, Día de entreno..."></label>
-        <button class="btn ghost small" id="dayDup" title="Crear un día nuevo copiando este">⧉ Duplicar día</button>
-        <button class="btn ghost small" id="dayDel" title="Borrar este día">🗑 Borrar día</button>
-      </div>
-      <div class="row" style="justify-content:space-between;align-items:center;margin-top:12px">
-        <h2 style="margin:0">Número de comidas</h2>
-        <div class="stepper">
-          <button class="btn ghost small" id="mealsMinus">−</button>
-          <b id="mealsCount">0</b>
-          <button class="btn ghost small" id="mealsPlus">+</button>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <h2>Total de <span id="planDayTitle">hoy</span></h2>
-      <div class="totals" id="planTotals"></div>
-      <details style="margin-top:10px">
-        <summary class="muted" style="cursor:pointer">🎯 Objetivos diarios (opcional)</summary>
-        <div class="row" style="margin-top:8px">
-          <label><span class="k">Kcal</span><input type="number" min="0" inputmode="decimal" data-target="k"></label>
-          <label><span class="p">Proteína g</span><input type="number" min="0" inputmode="decimal" data-target="p"></label>
-          <label><span class="c">Carbos g</span><input type="number" min="0" inputmode="decimal" data-target="c"></label>
-          <label><span class="f">Grasa g</span><input type="number" min="0" inputmode="decimal" data-target="f"></label>
-        </div>
-      </details>
-    </div>
-    <div id="meals"></div>
-    <div class="card"><button class="btn ghost small" id="planClear">Vaciar todas las comidas de este día</button></div>
-  </section>
-
-  <!-- REGISTRO -->
-  <section id="tab-log" class="hidden">
-    <div class="card">
-      <h2>Registrar peso</h2>
-      <form id="wForm" class="row" autocomplete="off">
-        <label>Fecha<input id="wDate" type="date" required></label>
-        <label>Peso (kg)<input id="wKg" type="number" step="0.01" min="20" max="400" inputmode="decimal" required placeholder="Ej: 72.4"></label>
-        <button class="btn" type="submit">Guardar</button>
-      </form>
-      <p class="muted" style="margin:8px 0 0">Pésate siempre en las mismas condiciones (por ejemplo, en ayunas y después de ir al baño). Si ya hay un registro ese día, se sustituye.</p>
-    </div>
-
-    <div class="card">
-      <h2>Progreso</h2>
-      <div class="totals" id="wStats"></div>
-      <div class="advice" id="wAdvice"></div>
-      <details style="margin-top:10px">
-        <summary class="muted" style="cursor:pointer">🎯 Objetivo: subir entre <b id="gMinTxt"></b>% y <b id="gMaxTxt"></b>% al mes</summary>
-        <div class="row" style="margin-top:8px">
-          <label>Mínimo % / mes<input id="gMin" type="number" step="0.1" min="0" inputmode="decimal"></label>
-          <label>Máximo % / mes<input id="gMax" type="number" step="0.1" min="0" inputmode="decimal"></label>
-        </div>
-      </details>
-    </div>
-
-    <div class="card">
-      <div class="row" style="justify-content:space-between;align-items:center">
-        <h2 style="margin:0">Gráfica</h2>
-        <div class="seg" id="wRange">
-          <button data-r="30">1M</button><button data-r="90">3M</button><button data-r="180">6M</button><button data-r="0">Todo</button>
-        </div>
-      </div>
-      <div class="chart-wrap" id="wChart"></div>
-      <div class="legend">
-        <span><i style="width:8px;height:8px;border-radius:50%;background:var(--muted);opacity:.6"></i>Peso diario</span>
-        <span><i style="width:16px;height:2px;background:var(--accent)"></i>Media semanal</span>
-        <span><i style="width:14px;height:10px;background:var(--accent);opacity:.15;border-radius:2px"></i>Rango objetivo</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Medias semanales</h2>
-      <div id="wWeeks"></div>
-    </div>
-
-    <div class="card">
-      <details>
-        <summary style="cursor:pointer;font-weight:600">Todos los registros <span class="muted" id="wCount"></span></summary>
-        <div class="list" id="wList" style="margin-top:6px"></div>
-      </details>
-    </div>
-  </section>
-</main>
-
-<div class="toast" id="toast"></div>
+<main></main>
+<div id="toast"></div>
 
 <script>
-const KEY = 'dieta-app-v1';
-const uid = () => Math.random().toString(36).slice(2, 10);
-const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-const r1 = n => Math.round(n * 10) / 10;
-const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) && n >= 0 ? n : 0; };
-
-const DEFAULT_FOODS = [
-  ['Arroz blanco (crudo)', 7, 79, 0.6, 356],
-  ['Pechuga de pollo', 23, 0, 1.5, 110],
-  ['Huevo entero', 12.5, 0.7, 10, 143],
-  ['Avena', 13, 60, 7, 372],
-  ['Plátano', 1.1, 20, 0.3, 89],
-  ['Aceite de oliva', 0, 0, 100, 884],
-  ['Leche semidesnatada', 3.2, 4.7, 1.6, 46],
-  ['Pasta (cruda)', 12, 71, 1.5, 355],
-  ['Atún al natural', 26, 0, 1, 112],
-  ['Patata', 2, 17, 0.1, 77],
+const MUSCLES = [
+  ['pecho', 'Pecho'], ['dorsal', 'Dorsal'], ['espalda', 'Espalda alta'],
+  ['delt_ant', 'Deltoides anterior'], ['delt_med', 'Deltoides medio'], ['delt_post', 'Deltoides posterior'],
+  ['biceps', 'Bíceps'], ['triceps', 'Tríceps'], ['antebrazo', 'Antebrazo'], ['abdomen', 'Abdomen'],
+  ['cuadriceps', 'Cuádriceps'], ['femoral', 'Femoral'], ['gemelo', 'Gemelo'],
 ];
+const MNAME = Object.fromEntries(MUSCLES);
+const MORDER = Object.fromEntries(MUSCLES.map(([k], i) => [k, i]));
+const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const KEY = 'gym-data-v1';
 
-let state = load();
+// ---------- utilidades ----------
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseYmd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const today = () => ymd(new Date());
+const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
+const dow = s => (parseYmd(s).getDay() + 6) % 7; // 0 = lunes
+const weekStart = s => addDays(s, -dow(s));
+const fmtDate = (s, o = { day: 'numeric', month: 'short' }) => parseYmd(s).toLocaleDateString('es-ES', o);
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const num = v => { if (v === '' || v == null) return null; const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : null; };
+const fmtN = n => n == null ? '' : (Math.round(n * 10) / 10).toLocaleString('es-ES');
+const fmtK = n => n >= 10000 ? (n / 1000).toLocaleString('es-ES', { maximumFractionDigits: 1 }) + 'k' : fmtN(n);
+const e1rm = (w, r) => (!w || !r) ? 0 : (r === 1 ? w : w * (1 + r / 30)); // fórmula de Epley
+const valid = st => st.r > 0;
 
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+// ---------- datos ----------
+function blank() { return { exercises: [], routines: [], week: [null, null, null, null, null, null, null], sessions: [], meta: {} }; }
 function load() {
   try {
-    const s = JSON.parse(localStorage.getItem(KEY));
-    if (s && Array.isArray(s.foods)) return normalize(s);
-  } catch (e) {}
-  return normalize({
-    foods: DEFAULT_FOODS.map(([name, p, c, f, k]) => ({ id: uid(), name, p, c, f, k })),
-  });
+    const d = JSON.parse(localStorage.getItem(KEY));
+    if (d && Array.isArray(d.exercises)) return Object.assign(blank(), d);
+  } catch {}
+  return blank();
 }
-function normalize(s) {
-  // Antes solo había un día (s.meals); ahora hay varios (s.days). Lo antiguo pasa a ser el "Día 1".
-  const days = Array.isArray(s.days) && s.days.length ? s.days : [{
-    id: uid(), name: 'Día 1',
-    meals: s.meals && s.meals.length ? s.meals : ['Desayuno', 'Comida', 'Merienda', 'Cena'].map(n => ({ id: uid(), name: n, items: [] })),
-  }];
-  return {
-    foods: s.foods || [],
-    calc: s.calc || [],
-    days,
-    dayId: days.some(d => d.id === s.dayId) ? s.dayId : days[0].id,
-    targets: s.targets || {},
-    recipes: Array.isArray(s.recipes) ? s.recipes : [],
-    weights: Array.isArray(s.weights) ? s.weights : [],
-    weightGoal: s.weightGoal || { min: 0.5, max: 1 },
-  };
-}
+let S = load();
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast('No se pudo guardar'); }
+  try { localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch { toast('⚠️ No se pudo guardar'); }
 }
-function toast(msg) {
-  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 1800);
-}
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
-const foodById = id => state.foods.find(f => f.id === id);
-const curDay = () => state.days.find(d => d.id === state.dayId) || state.days[0];
-const allMeals = () => state.days.flatMap(d => d.meals);
-function macrosFor(foodId, g) {
-  const f = foodById(foodId);
-  if (!f) return { k: 0, p: 0, c: 0, f: 0 };
-  const m = g / 100;
-  return { k: f.k * m, p: f.p * m, c: f.c * m, f: f.f * m };
-}
-const recipeById = id => state.recipes.find(r => r.id === id);
-const recipeWeight = r => r.items.reduce((s, it) => s + it.g, 0);
-// Una línea puede ser un alimento ({foodId, g}) o una receta ({recipeId, q} con q = raciones)
-function itemMacros(it) {
-  if (!it.recipeId) return macrosFor(it.foodId, it.g);
-  const r = recipeById(it.recipeId);
-  if (!r) return { k: 0, p: 0, c: 0, f: 0 };
-  const m = sum(r.items);
-  return { k: m.k * it.q, p: m.p * it.q, c: m.c * it.q, f: m.f * it.q };
-}
-function sum(items) {
-  return items.reduce((a, it) => {
-    const m = itemMacros(it);
-    a.k += m.k; a.p += m.p; a.c += m.c; a.f += m.f; return a;
-  }, { k: 0, p: 0, c: 0, f: 0 });
-}
-const macroLine = m => `<span class="k">${Math.round(m.k)} kcal</span><span class="p">P ${r1(m.p)}</span><span class="c">C ${r1(m.c)}</span><span class="f">G ${r1(m.f)}</span>`;
+const ui = { tab: 'hoy', date: today(), weekOff: 0, monthOff: 0, progEx: null, metric: 'e1rm', histN: 15 };
 
-function totalsHTML(t, targets = {}) {
-  const defs = [['k', 'Kcal', 0], ['p', 'Proteína', 1], ['c', 'Carbos', 1], ['f', 'Grasa', 1]];
-  return defs.map(([key, label, dec]) => {
-    const v = dec ? r1(t[key]) : Math.round(t[key]);
-    const target = num(targets[key]);
-    const extra = target ? `<div class="t">/ ${target}${key === 'k' ? '' : ' g'}</div>
-      <div class="bar"><i style="width:${Math.min(100, t[key] / target * 100)}%;background:var(--${key})"></i></div>` : '';
-    return `<div class="tot"><div class="v ${key}">${v}</div><div class="l">${label}${key === 'k' ? '' : ' (g)'}</div>${extra}</div>`;
+const exById = id => S.exercises.find(e => e.id === id);
+const exName = id => exById(id)?.name ?? '(ejercicio borrado)';
+const exMuscle = id => exById(id)?.muscle;
+const sortEx = (a, b) => (MORDER[a.muscle] - MORDER[b.muscle]) || a.name.localeCompare(b.name, 'es');
+const sessionOn = date => S.sessions.find(s => s.date === date);
+const routineById = id => S.routines.find(r => r.id === id);
+
+function exOptions() {
+  const act = S.exercises.filter(e => !e.archived);
+  if (!act.length) return '<option value="">— Crea ejercicios primero —</option>';
+  return '<option value="">Elegir ejercicio…</option>' + MUSCLES.map(([k, n]) => {
+    const list = act.filter(e => e.muscle === k).sort(sortEx);
+    return list.length ? `<optgroup label="${n}">${list.map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}</optgroup>` : '';
   }).join('');
 }
-
-function foodOptions(withRecipes = true) {
-  if (!state.foods.length) return '<option value="">— Primero añade alimentos —</option>';
-  const foods = [...state.foods].sort((a, b) => a.name.localeCompare(b.name, 'es'))
-    .map(f => `<option value="${f.id}">${esc(f.name)}</option>`).join('');
-  if (!withRecipes || !state.recipes.length) return foods;
-  const recipes = [...state.recipes].sort((a, b) => a.name.localeCompare(b.name, 'es'))
-    .map(r => `<option value="r:${r.id}">📖 ${esc(r.name)}</option>`).join('');
-  return `<optgroup label="Alimentos">${foods}</optgroup><optgroup label="Recetas (raciones)">${recipes}</optgroup>`;
+function musclesOf(r) {
+  const ms = [...new Set(r.items.map(it => exMuscle(it.exId)).filter(Boolean))].sort((a, b) => MORDER[a] - MORDER[b]);
+  return ms.map(m => MNAME[m]).join(', ');
 }
-// Crea la línea a añadir según lo elegido en el selector
-function newItem(value, qty) {
-  if (value.startsWith('r:')) return { id: uid(), recipeId: value.slice(2), q: num(qty) || 1 };
-  return { id: uid(), foodId: value, g: num(qty) || 100 };
-}
-// Al elegir una receta la cantidad pasa a raciones; al volver a un alimento, a gramos
-function syncUnit(sel) {
-  const row = sel.closest('.add-row'); if (!row) return;
-  const inp = row.querySelector('input'), unit = row.querySelector('.unit');
-  const isRecipe = sel.value.startsWith('r:');
-  if (!unit || (unit.textContent === 'rac.') === isRecipe) return;
-  unit.textContent = isRecipe ? 'rac.' : 'g';
-  inp.value = isRecipe ? 1 : 100;
-  inp.step = isRecipe ? '0.25' : 'any';
-}
-document.addEventListener('change', e => { if (e.target.matches('.add-row select')) syncUnit(e.target); });
-
-const openPreviews = new Set();
-function recipePreviewHTML(r, q) {
-  if (!r.items.length) return '<div class="empty">Receta vacía.</div>';
-  return r.items.map(it => {
-    const f = foodById(it.foodId), g = it.g * q;
-    return `<div class="ing"><span>${f ? esc(f.name) : '<i>(borrado)</i>'} · <b>${r1(g)} g</b></span><span class="macros">${macroLine(macrosFor(it.foodId, g))}</span></div>`;
-  }).join('') + `<div class="muted" style="margin-top:4px">Total: ${r1(recipeWeight(r) * q)} g${q !== 1 ? ` (${q} × ${r1(recipeWeight(r))} g)` : ''}</div>`;
-}
-
-function itemRowHTML(it, ctx) {
-  if (it.recipeId) {
-    const r = recipeById(it.recipeId);
-    const open = openPreviews.has(it.id);
-    return `<div class="item" data-ctx="${ctx}" data-id="${it.id}">
-      <div class="name"><b>📖 ${r ? esc(r.name) : '<i>(receta borrada)</i>'}</b><div class="macros">${macroLine(itemMacros(it))}</div>
-        ${r ? `<button class="rtoggle" data-rtoggle>${open ? '▾ Ocultar ingredientes' : '▸ Ver ingredientes'}</button>` : ''}</div>
-      <input class="g" type="number" min="0" step="0.25" inputmode="decimal" value="${it.q}" aria-label="raciones"> <span class="muted">rac.</span>
-      <button class="icon" data-del title="Quitar">✕</button>
-    </div>${r ? `<div class="recipe-preview${open ? '' : ' hidden'}">${recipePreviewHTML(r, it.q)}</div>` : ''}`;
+// Última sesión anterior a `date` en la que se hizo el ejercicio
+function lastPerf(exId, date) {
+  let best = null;
+  for (const s of S.sessions) {
+    if (s.date >= date || (best && s.date <= best.date)) continue;
+    const sets = s.entries.filter(e => e.exId === exId).flatMap(e => e.sets.filter(valid));
+    if (sets.length) best = { date: s.date, sets };
   }
-  const f = foodById(it.foodId);
-  const m = macrosFor(it.foodId, it.g);
-  return `<div class="item" data-ctx="${ctx}" data-id="${it.id}">
-    <div class="name"><b>${f ? esc(f.name) : '<i>(alimento borrado)</i>'}</b><div class="macros">${macroLine(m)}</div></div>
-    <input class="g" type="number" min="0" step="any" inputmode="decimal" value="${it.g}" aria-label="gramos"> <span class="muted">g</span>
-    <button class="icon" data-del title="Quitar">✕</button>
+  return best;
+}
+function bestBefore(exId, date) {
+  let b = 0;
+  for (const s of S.sessions) if (s.date < date)
+    for (const e of s.entries) if (e.exId === exId) for (const st of e.sets) if (valid(st)) b = Math.max(b, e1rm(st.w, st.r));
+  return b;
+}
+const isPR = (st, prev) => valid(st) && prev > 0 && e1rm(st.w, st.r) > prev + 1e-9;
+function sessStats(s) {
+  let n = 0, vol = 0;
+  for (const e of s.entries) for (const st of e.sets) if (valid(st)) { n++; vol += (st.w || 0) * st.r; }
+  return { n, vol };
+}
+
+// ---------- vistas ----------
+const VIEWS = { hoy: vHoy, plan: vPlan, ej: vEj, prog: vProg, datos: vDatos };
+function render() {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === ui.tab));
+  document.querySelector('main').innerHTML = VIEWS[ui.tab]();
+}
+
+function vHoy() {
+  const d = ui.date, s = sessionOn(d), isToday = d === today();
+  let h = `<div class="datebar">
+    <button class="icon nav" data-act="day" data-n="-1" aria-label="Día anterior">‹</button>
+    <label class="datepick"><b>${isToday ? 'Hoy' : esc(cap(fmtDate(d, { weekday: 'long' })))}</b>
+      <span>${esc(fmtDate(d, { day: 'numeric', month: 'long', year: 'numeric' }))}</span>
+      <input type="date" value="${d}" data-field="date"></label>
+    <button class="icon nav" data-act="day" data-n="1" aria-label="Día siguiente">›</button>
+  </div>`;
+  if (!isToday) h += `<div style="text-align:center;margin:-8px 0 12px"><button class="btn ghost small" data-act="goToday">Volver a hoy</button></div>`;
+
+  if (!s) {
+    const planned = routineById(S.week[dow(d)]);
+    h += `<div class="card"><h2>¿Qué entrenas?</h2>`;
+    if (planned) h += pickBtn(planned, `Plan del ${DAYS[dow(d)].toLowerCase()}`, true);
+    else if (S.routines.length) h += `<p class="muted small" style="margin-top:0">Según tu plan, el ${DAYS[dow(d)].toLowerCase()} es día de descanso.</p>`;
+    S.routines.filter(r => r !== planned).forEach(r => h += pickBtn(r, '', false));
+    h += `<button class="pick" data-act="start" data-id=""><b>+ Entreno libre</b><span>Empieza vacío y añade ejercicios sobre la marcha</span></button>`;
+    if (!S.exercises.length) h += `<p class="muted small">👉 Empieza creando tus ejercicios en la pestaña <b>Ejercicios</b> y luego tus entrenos en <b>Plan</b>.</p>`;
+    else if (!S.routines.length) h += `<p class="muted small">👉 Crea entrenos (Pecho, Pierna…) y asígnalos a cada día en la pestaña <b>Plan</b>.</p>`;
+    return h + '</div>';
+  }
+
+  const st = sessStats(s);
+  h += `<div class="card">
+    <div class="ex-head"><div class="name"><input class="title" value="${esc(s.name)}" data-field="sname" aria-label="Nombre del entreno"></div>
+      <button class="icon" data-act="delSession" title="Borrar entreno">🗑</button></div>
+    <div class="stats">
+      <div class="stat"><b id="st-n">${st.n}</b><span>series</span></div>
+      <div class="stat"><b id="st-v">${fmtK(st.vol)}</b><span>kg volumen</span></div>
+      <div class="stat"><b>${s.entries.length}</b><span>ejercicios</span></div>
+    </div></div>`;
+
+  s.entries.forEach((en, i) => {
+    const last = lastPerf(en.exId, d), prev = bestBefore(en.exId, d), m = exMuscle(en.exId);
+    h += `<div class="card">
+      <div class="ex-head">
+        <div class="name"><b>${esc(exName(en.exId))}</b>${m ? `<span class="chip">${MNAME[m]}</span>` : ''}${en.target ? `<span class="tgt">🎯 ${esc(en.target)}</span>` : ''}</div>
+        <button class="icon edit" data-act="moveEntry" data-i="${i}" data-n="-1" aria-label="Subir">↑</button>
+        <button class="icon edit" data-act="moveEntry" data-i="${i}" data-n="1" aria-label="Bajar">↓</button>
+        <button class="icon" data-act="delEntry" data-i="${i}" aria-label="Quitar">✕</button>
+      </div>
+      <div class="last">${last
+        ? `Última vez (${esc(fmtDate(last.date))}): <b>${last.sets.map(x => `${fmtN(x.w || 0)}×${x.r}`).join(' · ')}</b>`
+        : 'Primera vez con este ejercicio'}</div>
+      ${en.sets.map((x, j) => setRow(en, x, i, j, last, prev)).join('')}
+      <div class="ex-foot"><button class="btn ghost small" data-act="addSet" data-i="${i}">+ Serie</button>
+        ${prev ? `<span class="muted small">Mejor 1RM est.: ${fmtN(prev)} kg</span>` : ''}</div>
+    </div>`;
+  });
+
+  h += `<div class="card"><h2>Añadir ejercicio</h2><div class="row">
+    <select id="addEntry">${exOptions()}</select>
+    <button class="btn" data-act="addEntry">Añadir</button></div></div>`;
+  return h;
+}
+function pickBtn(r, tag, main) {
+  return `<button class="pick ${main ? 'main' : ''}" data-act="start" data-id="${r.id}">
+    ${tag ? `<small>${esc(tag)}</small>` : ''}<b>${esc(r.name)}</b>
+    <span>${r.items.length} ejercicio${r.items.length === 1 ? '' : 's'}${r.items.length ? ' · ' + esc(musclesOf(r)) : ''}</span></button>`;
+}
+function phFor(last, en, j) {
+  if (last) return last.sets[j] || last.sets[last.sets.length - 1];
+  for (let k = j - 1; k >= 0; k--) if (valid(en.sets[k])) return en.sets[k];
+  return null;
+}
+function setRow(en, st, i, j, last, prev) {
+  const ph = phFor(last, en, j);
+  return `<div class="set ${valid(st) ? 'ok' : ''}" data-i="${i}" data-j="${j}">
+    <span class="n">${j + 1}</span>
+    <input inputmode="decimal" placeholder="${ph ? fmtN(ph.w || 0) : 'kg'}" value="${st.w == null ? '' : String(st.w).replace('.', ',')}" data-field="w" aria-label="Peso">
+    <span class="u">kg</span>
+    <input inputmode="numeric" placeholder="${ph ? ph.r : 'reps'}" value="${st.r ?? ''}" data-field="r" aria-label="Repeticiones">
+    <span class="u">reps</span>
+    <span class="pr" title="Récord personal">${isPR(st, prev) ? '🏆' : ''}</span>
+    <button class="icon okb" data-act="fillSet" title="Rellenar con lo de la última vez">✓</button>
+    <button class="icon" data-act="delSet" aria-label="Borrar serie">✕</button>
   </div>`;
 }
 
-/* ---------- ALIMENTOS ---------- */
-let editingId = null;
-function renderFoods() {
-  const q = $('#foodSearch').value.trim().toLowerCase();
-  const foods = [...state.foods].sort((a, b) => a.name.localeCompare(b.name, 'es'))
-    .filter(f => !q || f.name.toLowerCase().includes(q));
-  $('#foodCount').textContent = `(${state.foods.length})`;
-  $('#foodList').innerHTML = foods.length ? foods.map(f => `
-    <div class="item" data-id="${f.id}">
-      <div class="name"><b>${esc(f.name)}</b><div class="macros">${macroLine(f)} <span>/100 g</span></div></div>
-      <button class="icon edit" data-edit title="Editar">✎</button>
-      <button class="icon" data-delfood title="Borrar">🗑</button>
-    </div>`).join('') : '<div class="empty">No hay alimentos.</div>';
-}
-$('#foodSearch').addEventListener('input', renderFoods);
+function vPlan() {
+  let h = `<div class="card"><h2>Semana</h2><div class="list">` + DAYS.map((dn, i) => `
+    <div class="item"><div class="name"><b>${dn}</b></div>
+      <div class="ctrl" style="flex:1;max-width:240px"><select data-field="week" data-d="${i}">
+        <option value="">😴 Descanso</option>
+        ${S.routines.map(r => `<option value="${r.id}" ${S.week[i] === r.id ? 'selected' : ''}>${esc(r.name)}</option>`).join('')}
+      </select></div></div>`).join('') + `</div></div>`;
 
-$('#foodForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const p = num($('#fP').value), c = num($('#fC').value), f = num($('#fF').value);
-  const kRaw = $('#fK').value.trim();
-  const k = kRaw === '' ? Math.round(4 * p + 4 * c + 9 * f) : num(kRaw);
-  const name = $('#fName').value.trim();
-  if (!name) return;
-  if (editingId) {
-    Object.assign(foodById(editingId), { name, p, c, f, k });
-    toast('Alimento actualizado');
-  } else {
-    state.foods.push({ id: uid(), name, p, c, f, k });
-    toast('Alimento añadido');
-  }
-  resetFoodForm(); save(); renderAll();
-});
-function resetFoodForm() {
-  editingId = null;
-  $('#foodForm').reset();
-  $('#foodSubmit').textContent = 'Añadir';
-  $('#foodFormTitle').firstChild.textContent = 'Añadir alimento ';
-  $('#foodCancel').classList.add('hidden');
-}
-$('#foodCancel').addEventListener('click', resetFoodForm);
-
-$('#foodList').addEventListener('click', e => {
-  const row = e.target.closest('.item'); if (!row) return;
-  const f = foodById(row.dataset.id);
-  if (e.target.closest('[data-edit]')) {
-    editingId = f.id;
-    $('#fName').value = f.name; $('#fP').value = f.p; $('#fC').value = f.c; $('#fF').value = f.f; $('#fK').value = f.k;
-    $('#foodSubmit').textContent = 'Guardar';
-    $('#foodFormTitle').firstChild.textContent = 'Editar alimento ';
-    $('#foodCancel').classList.remove('hidden');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    $('#fName').focus();
-  } else if (e.target.closest('[data-delfood]')) {
-    const used = state.calc.some(i => i.foodId === f.id) || allMeals().some(m => m.items.some(i => i.foodId === f.id))
-      || state.recipes.some(r => r.items.some(i => i.foodId === f.id));
-    if (!confirm(`¿Borrar "${f.name}"?${used ? '\nTambién se quitará de la calculadora, del planificador y de las recetas que lo lleven.' : ''}`)) return;
-    state.foods = state.foods.filter(x => x.id !== f.id);
-    state.calc = state.calc.filter(i => i.foodId !== f.id);
-    allMeals().forEach(m => m.items = m.items.filter(i => i.foodId !== f.id));
-    state.recipes.forEach(r => r.items = r.items.filter(i => i.foodId !== f.id));
-    save(); renderAll();
-  }
-});
-
-/* ---------- RECETAS ---------- */
-let draft = null; // receta que se está creando/editando
-function renderRecipes() {
-  $('#recipeCount').textContent = `(${state.recipes.length})`;
-  const list = [...state.recipes].sort((a, b) => a.name.localeCompare(b.name, 'es'));
-  $('#recipeList').innerHTML = list.length ? list.map(r => `
-    <div class="item" data-rid="${r.id}">
-      <div class="name"><b>📖 ${esc(r.name)}</b>
-        <div class="macros">${macroLine(sum(r.items))} <span>· ${r1(recipeWeight(r))} g</span></div>
-        <div class="muted" style="font-size:12px">${r.items.map(i => { const f = foodById(i.foodId); return f ? `${esc(f.name)} ${r1(i.g)} g` : ''; }).filter(Boolean).join(' · ')}</div>
-      </div>
-      <button class="icon edit" data-redit title="Editar">✎</button>
-      <button class="icon" data-rdel title="Borrar">🗑</button>
-    </div>`).join('') : (draft ? '' : '<div class="empty">Aún no tienes recetas. Crea una con los alimentos de tu lista.</div>');
-  renderRecipeEditor();
-}
-function renderRecipeEditor() {
-  const box = $('#recipeEditor');
-  box.classList.toggle('hidden', !draft);
-  if (!draft) { box.innerHTML = ''; return; }
-  box.innerHTML = `
-    <label>Nombre de la receta<input id="rName" value="${esc(draft.name)}" placeholder="Ej: Tortilla de avena"></label>
-    <div class="muted" style="margin:10px 0 2px">Ingredientes (receta completa = 1 ración)</div>
-    <div class="list">${draft.items.length ? draft.items.map(it => itemRowHTML(it, 'recipe')).join('') : '<div class="empty">Añade ingredientes abajo.</div>'}</div>
-    <div class="add-row">
-      <select id="rFood">${foodOptions(false)}</select>
-      <input id="rG" type="number" min="0" step="any" inputmode="decimal" value="100" placeholder="g">
-      <span class="unit">g</span>
-      <button class="btn" id="rAdd" type="button">+</button>
-    </div>
-    <div class="meal-sum" id="rSum"></div>
-    <div class="row">
-      <button class="btn" id="rSave" type="button">Guardar receta</button>
-      <button class="btn ghost" id="rCancel" type="button">Cancelar</button>
+  h += `<div class="section-head"><h2>Entrenos</h2><button class="btn small" data-act="newRoutine">+ Nuevo entreno</button></div>`;
+  if (!S.routines.length) h += `<div class="card empty">Aún no hay entrenos. Crea uno (p. ej. “Torso”, “Pierna”, “Push”) y añádele ejercicios con sus series y repeticiones objetivo.</div>`;
+  S.routines.forEach(r => {
+    const tot = r.items.reduce((a, it) => a + (it.sets || 0), 0);
+    h += `<div class="card">
+      <div class="ex-head"><div class="name"><input class="title" value="${esc(r.name)}" data-field="rname" data-id="${r.id}" aria-label="Nombre del entreno"></div>
+        <button class="icon" data-act="delRoutine" data-id="${r.id}" title="Borrar entreno">🗑</button></div>
+      <div class="muted small">${tot} series${r.items.length ? ' · ' + esc(musclesOf(r)) : ''}</div>
+      <div class="list">${r.items.map((it, k) => `
+        <div class="item"><div class="name"><b>${esc(exName(it.exId))}</b><span class="chip">${MNAME[exMuscle(it.exId)] || '—'}</span></div>
+          <div class="ctrl">
+            <input class="sm" inputmode="numeric" value="${it.sets ?? ''}" data-field="itSets" data-id="${r.id}" data-k="${k}" aria-label="Series">
+            <span class="u">×</span>
+            <input class="md" value="${esc(it.reps)}" placeholder="reps" data-field="itReps" data-id="${r.id}" data-k="${k}" aria-label="Repeticiones">
+            <button class="icon edit" data-act="moveItem" data-id="${r.id}" data-k="${k}" data-n="-1" aria-label="Subir">↑</button>
+            <button class="icon" data-act="delItem" data-id="${r.id}" data-k="${k}" aria-label="Quitar">✕</button>
+          </div></div>`).join('')}</div>
+      <div class="row" style="margin-top:8px"><select id="add-${r.id}" style="flex:1">${exOptions()}</select>
+        <button class="btn ghost" data-act="addItem" data-id="${r.id}">Añadir</button></div>
     </div>`;
-  renderDraftSum();
+  });
+  return h;
 }
-function renderDraftSum() {
-  if (draft) $('#rSum').innerHTML = `Total: ${macroLine(sum(draft.items))} <span class="muted">· ${r1(recipeWeight(draft))} g</span>`;
+
+function vEj() {
+  let h = `<div class="card"><h2>Nuevo ejercicio</h2><div class="row">
+    <label class="wide">Nombre<input id="newExName" placeholder="p. ej. Press banca" autocomplete="off"></label>
+    <label>Músculo<select id="newExMuscle">${MUSCLES.map(([k, n]) => `<option value="${k}">${n}</option>`).join('')}</select></label>
+    <button class="btn" data-act="addEx">Añadir</button></div></div>`;
+  const act = S.exercises.filter(e => !e.archived);
+  if (!act.length) return h + `<div class="card empty">Todavía no tienes ejercicios. Añádelos arriba asignando a cada uno su músculo principal: así se calcula el volumen semanal por músculo.</div>`;
+  h += `<div class="card">`;
+  MUSCLES.forEach(([k, n]) => {
+    const list = act.filter(e => e.muscle === k).sort(sortEx);
+    if (!list.length) return;
+    h += `<h3>${n} · ${list.length}</h3><div class="list">` + list.map(e => `
+      <div class="item"><div class="name"><input class="plain" value="${esc(e.name)}" data-field="exName" data-id="${e.id}" aria-label="Nombre"></div>
+        <div class="ctrl"><select class="msel" data-field="exMuscle" data-id="${e.id}" aria-label="Músculo">
+          ${MUSCLES.map(([k2, n2]) => `<option value="${k2}" ${k2 === e.muscle ? 'selected' : ''}>${n2}</option>`).join('')}</select>
+          <button class="icon" data-act="delEx" data-id="${e.id}" aria-label="Borrar">✕</button></div></div>`).join('') + `</div>`;
+  });
+  return h + `</div>`;
 }
-function openEditor(r) {
-  draft = r ? { id: r.id, name: r.name, items: r.items.map(i => ({ ...i })) } : { id: null, name: '', items: [] };
-  renderRecipes();
-  $('#recipeEditor').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  $('#rName').focus();
-}
-$('#recipeNew').addEventListener('click', () => openEditor(null));
-$('#recipeEditor').addEventListener('input', e => { if (e.target.id === 'rName') draft.name = e.target.value; });
-$('#recipeEditor').addEventListener('click', e => {
-  if (e.target.id === 'rAdd') {
-    const foodId = $('#rFood').value; if (!foodId) return;
-    draft.items.push({ id: uid(), foodId, g: num($('#rG').value) || 100 });
-    const keep = foodId; renderRecipeEditor(); $('#rFood').value = keep;
-  } else if (e.target.id === 'rCancel') {
-    draft = null; renderRecipes();
-  } else if (e.target.id === 'rSave') {
-    const name = draft.name.trim();
-    if (!name) { alert('Ponle un nombre a la receta.'); return; }
-    if (!draft.items.length) { alert('Añade al menos un ingrediente.'); return; }
-    const data = { name, items: draft.items };
-    const existing = draft.id && recipeById(draft.id);
-    if (existing) Object.assign(existing, data); else state.recipes.push({ id: uid(), ...data });
-    toast(existing ? 'Receta actualizada' : 'Receta guardada');
-    draft = null; save(); renderAll();
+
+// Calendario del mes estilo GitHub: más series ese día → cuadro más intenso
+function vMonth() {
+  const t = parseYmd(today()), first = new Date(t.getFullYear(), t.getMonth() + ui.monthOff, 1);
+  const y = first.getFullYear(), m = first.getMonth(), nd = new Date(y, m + 1, 0).getDate();
+  const ms = ymd(first), me = ymd(new Date(y, m, nd));
+  const sets = {};
+  for (const s of S.sessions) if (s.date >= ms && s.date <= me) {
+    const n = sessStats(s).n; if (n) sets[s.date] = (sets[s.date] || 0) + n;
   }
-});
-$('#recipeList').addEventListener('click', e => {
-  const row = e.target.closest('[data-rid]'); if (!row) return;
-  const r = recipeById(row.dataset.rid);
-  if (e.target.closest('[data-redit]')) openEditor(r);
-  else if (e.target.closest('[data-rdel]')) {
-    const used = state.calc.some(i => i.recipeId === r.id) || allMeals().some(m => m.items.some(i => i.recipeId === r.id));
-    if (!confirm(`¿Borrar la receta "${r.name}"?${used ? '\nTambién se quitará de la calculadora y del planificador.' : ''}`)) return;
-    state.recipes = state.recipes.filter(x => x.id !== r.id);
-    state.calc = state.calc.filter(i => i.recipeId !== r.id);
-    allMeals().forEach(m => m.items = m.items.filter(i => i.recipeId !== r.id));
-    save(); renderAll();
+  const max = Math.max(1, ...Object.values(sets));
+  const lvl = n => n ? Math.min(4, Math.ceil(n / max * 4)) : 0;
+  const td = today();
+  let trained = 0, planned = 0, totSets = 0;
+  let cells = ['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => `<span class="dh">${d}</span>`).join('');
+  cells += '<span></span>'.repeat(dow(ms));
+  for (let i = 1; i <= nd; i++) {
+    const d = ymd(new Date(y, m, i)), n = sets[d] || 0, isPlan = !!routineById(S.week[dow(d)]);
+    if (n) { trained++; totSets += n; }
+    if (isPlan) planned++;
+    const cls = [`l${lvl(n)}`, d === td ? 'today' : '', d > td ? 'future' : '', !n && isPlan && d >= td ? 'plan' : ''].join(' ');
+    const tip = `${cap(fmtDate(d, { weekday: 'long', day: 'numeric', month: 'long' }))}: ${n ? n + ' series' : isPlan ? 'planificado' : 'sin entreno'}`;
+    cells += `<span class="d ${cls}" title="${esc(tip)}" data-act="openDay" data-date="${d}">${i}</span>`;
   }
-});
-// Desplegar / plegar ingredientes de una receta en calculadora y planificador
-document.addEventListener('click', e => {
-  const btn = e.target.closest('[data-rtoggle]'); if (!btn) return;
-  const row = btn.closest('.item'), prev = row.nextElementSibling, id = row.dataset.id;
-  const open = !openPreviews.has(id);
-  open ? openPreviews.add(id) : openPreviews.delete(id);
-  prev.classList.toggle('hidden', !open);
-  btn.textContent = open ? '▾ Ocultar ingredientes' : '▸ Ver ingredientes';
-});
-
-/* ---------- CALCULADORA ---------- */
-function renderCalc() {
-  const sel = $('#calcFood'), prev = sel.value;
-  sel.innerHTML = foodOptions();
-  if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
-  syncUnit(sel);
-  $('#calcList').innerHTML = state.calc.length
-    ? state.calc.map(it => itemRowHTML(it, 'calc')).join('')
-    : '<div class="empty">Añade alimentos arriba y ajusta los gramos.</div>';
-  renderCalcTotals();
-}
-function renderCalcTotals() { $('#calcTotals').innerHTML = totalsHTML(sum(state.calc)); }
-$('#calcAdd').addEventListener('click', () => {
-  const foodId = $('#calcFood').value; if (!foodId) return;
-  state.calc.push(newItem(foodId, $('#calcG').value));
-  save(); renderCalc();
-});
-$('#calcClear').addEventListener('click', () => {
-  if (state.calc.length && confirm('¿Vaciar la calculadora?')) { state.calc = []; save(); renderCalc(); }
-});
-
-/* ---------- PLANIFICADOR ---------- */
-let copyOpenFor = null; // comida con el panel "Copiar" abierto
-const cloneItems = items => items.map(i => ({ ...i, id: uid() }));
-const dayKcal = d => Math.round(sum(d.meals.flatMap(m => m.items)).k);
-
-function renderDays() {
-  const day = curDay();
-  $('#dayTabs').innerHTML = state.days.map(d => `
-    <button class="chip${d.id === day.id ? ' on' : ''}" data-day="${d.id}">${esc(d.name || 'Sin nombre')}<small>${dayKcal(d)} kcal</small></button>`).join('')
-    + '<button class="chip add" id="dayAdd" title="Añadir un día nuevo">+ Día</button>';
-  if (document.activeElement !== $('#dayName')) $('#dayName').value = day.name;
-  $('#dayDel').disabled = state.days.length <= 1;
-  $('#dayDel').style.opacity = state.days.length <= 1 ? .4 : 1;
-  $('#planDayTitle').textContent = day.name || 'este día';
-}
-
-// Opciones para copiar: comidas con alimentos de cualquier día, menos la propia
-function copyPanelHTML(meal, mealIdx) {
-  const day = curDay(), dayIdx = state.days.indexOf(day);
-  const groups = state.days.map((d, di) => {
-    const opts = d.meals.filter(m => m.id !== meal.id && m.items.length)
-      .map(m => `<option value="${d.id}|${m.id}">${esc(m.name || 'Comida')} · ${m.items.length} ${m.items.length === 1 ? 'elemento' : 'elementos'} · ${Math.round(sum(m.items).k)} kcal</option>`).join('');
-    return opts ? `<optgroup label="${esc(d.name || 'Día ' + (di + 1))}${di === dayIdx - 1 ? ' (anterior)' : ''}${d.id === day.id ? ' (este día)' : ''}">${opts}</optgroup>` : '';
-  }).join('');
-  if (!groups) return `<div class="copy-panel"><div class="empty">No hay otras comidas con alimentos para copiar.</div>
-    <button class="btn ghost small" data-copycancel>Cerrar</button></div>`;
-  return `<div class="copy-panel">
-    <div class="muted">Copiar a <b>${esc(meal.name || 'esta comida')}</b> desde:</div>
-    <select data-copysrc>${groups}</select>
-    <div class="row">
-      <button class="btn small" data-copydo="replace">Reemplazar</button>
-      <button class="btn ghost small" data-copydo="append">Añadir a lo que hay</button>
-      <button class="btn ghost small" data-copycancel>Cancelar</button>
+  // Racha: semanas seguidas con al menos un entreno (la semana actual no la rompe si aún no has entrenado)
+  const trainedDays = new Set(S.sessions.filter(s => sessStats(s).n).map(s => s.date));
+  let streak = 0, w = weekStart(td);
+  const hasWeek = ws => [...Array(7)].some((_, k) => trainedDays.has(addDays(ws, k)));
+  if (hasWeek(w)) streak++;
+  for (w = addDays(w, -7); hasWeek(w); w = addDays(w, -7)) streak++;
+  const title = cap(first.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }));
+  return `<div class="card"><h2>Constancia</h2>
+    <div class="weeknav"><button class="icon nav edit" data-act="month" data-n="-1" aria-label="Mes anterior">‹</button>
+      <b>${esc(title)}</b>
+      <button class="icon nav edit" data-act="month" data-n="1" aria-label="Mes siguiente" ${ui.monthOff >= 0 ? 'disabled style="opacity:.3"' : ''}>›</button></div>
+    <div class="cal">${cells}</div>
+    <div class="heat-leg">Menos <i></i><i style="background:var(--h1);border-color:var(--h1)"></i><i style="background:var(--h2);border-color:var(--h2)"></i><i style="background:var(--h3);border-color:var(--h3)"></i><i style="background:var(--h4);border-color:var(--h4)"></i> Más</div>
+    <div class="stats">
+      <div class="stat"><b>${trained}${planned ? `<small class="muted" style="font-size:13px"> / ${planned}</small>` : ''}</b><span>días entrenados${planned ? ' / planificados' : ''}</span></div>
+      <div class="stat"><b>${totSets}</b><span>series en el mes</span></div>
+      <div class="stat"><b>${streak}${streak >= 4 ? ' 🔥' : ''}</b><span>semana${streak === 1 ? '' : 's'} seguida${streak === 1 ? '' : 's'}</span></div>
     </div></div>`;
 }
-// Por defecto propone la misma comida (misma posición) del día anterior
-function defaultCopySource(mealIdx) {
-  const idx = state.days.indexOf(curDay());
-  const order = [...state.days.slice(0, idx).reverse(), ...state.days.slice(idx + 1)];
-  for (const d of order) { const m = d.meals[mealIdx]; if (m && m.items.length) return `${d.id}|${m.id}`; }
-  return null;
-}
 
-function renderPlan() {
-  renderDays();
-  const meals = curDay().meals;
-  $('#mealsCount').textContent = meals.length;
-  $('#meals').innerHTML = meals.map((m, i) => `
-    <div class="card" data-meal="${m.id}">
-      <div class="meal-head">
-        <input value="${esc(m.name)}" data-mealname aria-label="Nombre de la comida" placeholder="Comida ${i + 1}">
-        <button class="btn ghost small" data-copyopen title="Copiar una comida de otro día">📋 Copiar</button>
-      </div>
-      ${copyOpenFor === m.id ? copyPanelHTML(m, i) : ''}
-      <div class="list">${m.items.length ? m.items.map(it => itemRowHTML(it, 'meal')).join('') : '<div class="empty">Sin alimentos todavía.</div>'}</div>
-      <div class="meal-sum" data-mealsum>${macroLine(sum(m.items))}</div>
-      <div class="add-row">
-        <select data-mealfood>${foodOptions()}</select>
-        <input type="number" min="0" step="any" inputmode="decimal" placeholder="g" value="100" data-mealg>
-        <span class="unit">g</span>
-        <button class="btn" data-mealadd>+</button>
-      </div>
-    </div>`).join('');
-  if (copyOpenFor) {
-    const sel = document.querySelector(`[data-meal="${copyOpenFor}"] [data-copysrc]`);
-    const def = defaultCopySource(meals.findIndex(m => m.id === copyOpenFor));
-    if (sel && def) sel.value = def;
-  }
-  renderPlanTotals();
-  document.querySelectorAll('[data-target]').forEach(inp => inp.value = state.targets[inp.dataset.target] ?? '');
-}
-function renderPlanTotals() {
-  $('#planTotals').innerHTML = totalsHTML(sum(curDay().meals.flatMap(m => m.items)), state.targets);
-  const chip = document.querySelector(`.chip[data-day="${state.dayId}"] small`);
-  if (chip) chip.textContent = `${dayKcal(curDay())} kcal`;
-}
-$('#mealsPlus').addEventListener('click', () => {
-  const meals = curDay().meals;
-  meals.push({ id: uid(), name: `Comida ${meals.length + 1}`, items: [] });
-  save(); renderPlan();
-});
-$('#mealsMinus').addEventListener('click', () => {
-  const meals = curDay().meals;
-  if (meals.length <= 1) return;
-  const last = meals[meals.length - 1];
-  if (last.items.length && !confirm(`"${last.name}" tiene alimentos. ¿Eliminarla?`)) return;
-  meals.pop(); save(); renderPlan();
-});
-$('#planClear').addEventListener('click', () => {
-  if (confirm(`¿Vaciar todas las comidas de "${curDay().name}"?`)) { curDay().meals.forEach(m => m.items = []); save(); renderPlan(); }
-});
+function vProg() {
+  // --- Volumen semanal por músculo ---
+  const ws = addDays(weekStart(today()), 7 * ui.weekOff), we = addDays(ws, 6);
+  const done = {}, plan = {};
+  MUSCLES.forEach(([k]) => { done[k] = 0; plan[k] = 0; });
+  for (const s of S.sessions) if (s.date >= ws && s.date <= we)
+    for (const e of s.entries) { const m = exMuscle(e.exId); if (m) done[m] += e.sets.filter(valid).length; }
+  S.week.forEach(rid => { const r = routineById(rid); if (r) r.items.forEach(it => { const m = exMuscle(it.exId); if (m) plan[m] += it.sets || 0; }); });
+  const scale = Math.max(1, ...MUSCLES.map(([k]) => Math.max(done[k], plan[k])));
+  const wlabel = ui.weekOff === 0 ? 'Esta semana' : ui.weekOff === -1 ? 'Semana pasada' : `${fmtDate(ws)} – ${fmtDate(we)}`;
+  let h = vMonth() + `<div class="card"><h2>Series por músculo</h2>
+    <div class="weeknav"><button class="icon nav edit" data-act="week" data-n="-1" aria-label="Semana anterior">‹</button>
+      <div style="text-align:center"><b>${esc(wlabel)}</b><div class="muted small">${esc(fmtDate(ws))} – ${esc(fmtDate(we))}</div></div>
+      <button class="icon nav edit" data-act="week" data-n="1" aria-label="Semana siguiente" ${ui.weekOff >= 0 ? 'disabled style="opacity:.3"' : ''}>›</button></div>`;
+  h += MUSCLES.map(([k, n]) => `
+    <div class="vrow"><span>${n}</span>
+      <div class="vbar"><i class="${plan[k] && done[k] >= plan[k] ? 'done' : ''}" style="width:${done[k] / scale * 100}%"></i>
+        ${plan[k] ? `<em style="left:calc(${plan[k] / scale * 100}% - 1px)"></em>` : ''}</div>
+      <span class="v"><b>${done[k]}</b>${plan[k] ? ` / ${plan[k]}` : ''}</span></div>`).join('');
+  h += `<div class="legend"><span><i style="background:var(--accent)"></i>Hechas</span><span><i style="background:var(--ok)"></i>Objetivo cumplido</span>
+    <span><i style="background:var(--text);opacity:.55;width:3px"></i>Planificadas</span></div>
+    <p class="muted small" style="margin:8px 0 0">Cuenta las series con repeticiones registradas; el objetivo sale de tu plan semanal.</p></div>`;
 
-/* Días */
-function selectDay(id) { state.dayId = id; copyOpenFor = null; save(); renderPlan(); }
-$('#dayTabs').addEventListener('click', e => {
-  if (e.target.closest('#dayAdd')) {
-    // Día nuevo con las mismas comidas (nombres) que el actual, pero vacías
-    const day = { id: uid(), name: `Día ${state.days.length + 1}`, meals: curDay().meals.map(m => ({ id: uid(), name: m.name, items: [] })) };
-    state.days.push(day); selectDay(day.id);
-    document.querySelector(`.chip[data-day="${day.id}"]`).scrollIntoView({ inline: 'nearest', block: 'nearest' });
-    toast(`${day.name} creado`);
-    return;
-  }
-  const chip = e.target.closest('[data-day]');
-  if (chip) selectDay(chip.dataset.day);
-});
-$('#dayName').addEventListener('input', e => {
-  curDay().name = e.target.value;
-  save();
-  const chip = document.querySelector(`.chip[data-day="${state.dayId}"]`);
-  if (chip) chip.firstChild.textContent = e.target.value || 'Sin nombre';
-  $('#planDayTitle').textContent = e.target.value || 'este día';
-});
-$('#dayDup').addEventListener('click', () => {
-  const src = curDay();
-  const copy = { id: uid(), name: `${src.name} (copia)`, meals: src.meals.map(m => ({ id: uid(), name: m.name, items: cloneItems(m.items) })) };
-  state.days.splice(state.days.indexOf(src) + 1, 0, copy);
-  selectDay(copy.id); toast('Día duplicado');
-});
-$('#dayDel').addEventListener('click', () => {
-  if (state.days.length <= 1) return;
-  const d = curDay();
-  if (!confirm(`¿Borrar "${d.name}" y todas sus comidas?`)) return;
-  const idx = state.days.indexOf(d);
-  state.days.splice(idx, 1);
-  selectDay(state.days[Math.max(0, idx - 1)].id);
-});
-document.querySelectorAll('[data-target]').forEach(inp => inp.addEventListener('input', () => {
-  state.targets[inp.dataset.target] = inp.value; save(); renderPlanTotals();
-}));
-
-$('#meals').addEventListener('click', e => {
-  const card = e.target.closest('[data-meal]'); if (!card) return;
-  const meal = curDay().meals.find(m => m.id === card.dataset.meal);
-  if (e.target.closest('[data-copyopen]')) {
-    copyOpenFor = copyOpenFor === meal.id ? null : meal.id; renderPlan();
-  } else if (e.target.closest('[data-copycancel]')) {
-    copyOpenFor = null; renderPlan();
-  } else if (e.target.closest('[data-copydo]')) {
-    const [dayId, mealId] = card.querySelector('[data-copysrc]').value.split('|');
-    const srcDay = state.days.find(d => d.id === dayId), src = srcDay && srcDay.meals.find(m => m.id === mealId);
-    if (!src) return;
-    const mode = e.target.closest('[data-copydo]').dataset.copydo;
-    if (mode === 'replace' && meal.items.length && !confirm(`Se sustituirá lo que hay ahora en "${meal.name}". ¿Continuar?`)) return;
-    meal.items = mode === 'replace' ? cloneItems(src.items) : meal.items.concat(cloneItems(src.items));
-    copyOpenFor = null; save(); renderPlan();
-    toast(`Copiado: ${src.name} de ${srcDay.name}`);
-  } else if (e.target.closest('[data-mealadd]')) {
-    const foodId = card.querySelector('[data-mealfood]').value; if (!foodId) return;
-    meal.items.push(newItem(foodId, card.querySelector('[data-mealg]').value));
-    save(); renderPlan();
-  }
-});
-$('#meals').addEventListener('input', e => {
-  if (e.target.matches('[data-mealname]')) {
-    curDay().meals.find(m => m.id === e.target.closest('[data-meal]').dataset.meal).name = e.target.value;
-    save();
-  }
-});
-
-/* ---------- Edición de gramos / borrar líneas (calc y comidas) ---------- */
-function findItem(row) {
-  if (row.dataset.ctx === 'calc') return { list: state.calc, owner: state };
-  if (row.dataset.ctx === 'recipe') return { list: draft.items, owner: draft };
-  const meal = curDay().meals.find(m => m.id === row.closest('[data-meal]').dataset.meal);
-  return { list: meal.items, owner: meal };
-}
-document.addEventListener('input', e => {
-  if (!e.target.matches('.item input.g')) return;
-  const row = e.target.closest('.item');
-  const { list, owner } = findItem(row);
-  const it = list.find(i => i.id === row.dataset.id);
-  if (it.recipeId) {
-    it.q = num(e.target.value);
-    const prev = row.nextElementSibling;
-    if (prev && prev.classList.contains('recipe-preview')) prev.innerHTML = recipePreviewHTML(recipeById(it.recipeId), it.q);
-  } else it.g = num(e.target.value);
-  row.querySelector('.macros').innerHTML = macroLine(itemMacros(it));
-  if (row.dataset.ctx === 'recipe') { renderDraftSum(); return; }
-  if (row.dataset.ctx === 'calc') renderCalcTotals();
-  else { row.closest('[data-meal]').querySelector('[data-mealsum]').innerHTML = macroLine(sum(owner.items)); renderPlanTotals(); }
-  save();
-});
-document.addEventListener('click', e => {
-  if (!e.target.closest('.item [data-del]')) return;
-  const row = e.target.closest('.item');
-  const { owner } = findItem(row);
-  openPreviews.delete(row.dataset.id);
-  if (row.dataset.ctx === 'recipe') { draft.items = draft.items.filter(i => i.id !== row.dataset.id); renderRecipeEditor(); }
-  else if (row.dataset.ctx === 'calc') { state.calc = state.calc.filter(i => i.id !== row.dataset.id); save(); renderCalc(); }
-  else { owner.items = owner.items.filter(i => i.id !== row.dataset.id); save(); renderPlan(); }
-});
-
-/* ---------- Pestañas ---------- */
-function showTab(tab) {
-  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  ['foods', 'calc', 'plan', 'log'].forEach(t => $('#tab-' + t).classList.toggle('hidden', t !== tab));
-  try { localStorage.setItem(KEY + '-tab', tab); } catch (e) {}
-  window.scrollTo(0, 0);
-  if (tab === 'log') renderChart();
-}
-document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
-
-/* ---------- Exportar / Importar ---------- */
-$('#btnExport').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `dieta-${new Date().toISOString().slice(0, 10)}.json`;
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-});
-$('#btnImport').addEventListener('click', () => $('#fileImport').click());
-$('#fileImport').addEventListener('change', async e => {
-  const file = e.target.files[0]; e.target.value = '';
-  if (!file) return;
-  try {
-    const data = JSON.parse(await file.text());
-    if (!Array.isArray(data.foods)) throw new Error();
-    if (!confirm('Esto reemplazará los datos actuales por los del archivo. ¿Continuar?')) return;
-    state = normalize(data); save(); renderAll(); toast('Datos importados');
-  } catch (err) { alert('El archivo no es válido.'); }
-});
-
-/* ---------- REGISTRO DE PESO ---------- */
-const DAYS_PER_MONTH = 30.44;
-const KCAL_PER_KG = 7700;
-const pad2 = n => String(n).padStart(2, '0');
-const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
-const dayNum = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d) / 864e5; };
-const dayStr = n => new Date(n * 864e5).toISOString().slice(0, 10);
-const fmtDate = (s, opts = { day: 'numeric', month: 'short' }) => new Date(dayNum(s) * 864e5).toLocaleDateString('es-ES', { ...opts, timeZone: 'UTC' });
-const mondayOf = n => n - ((new Date(n * 864e5).getUTCDay() + 6) % 7);
-const fmtKg = n => n.toFixed(2).replace('.', ',');
-const fmtPct = (n, d = 2) => (n > 0 ? '+' : '') + n.toFixed(d).replace('.', ',') + '%';
-let wRange = 90;
-try { wRange = +(localStorage.getItem(KEY + '-wrange') ?? 90); } catch (e) {}
-
-function sortedWeights() {
-  return [...state.weights].sort((a, b) => a.date.localeCompare(b.date));
-}
-// Agrupa por semana (lunes a domingo)
-function weeklyAverages(ws) {
-  const map = new Map();
-  ws.forEach(w => {
-    const n = dayNum(w.date), key = mondayOf(n);
-    if (!map.has(key)) map.set(key, []);
-    map.get(key).push({ n, kg: w.kg });
-  });
-  return [...map.entries()].sort((a, b) => a[0] - b[0]).map(([monday, arr]) => ({
-    monday,
-    avg: arr.reduce((s, x) => s + x.kg, 0) / arr.length,
-    x: arr.reduce((s, x) => s + x.n, 0) / arr.length, // posición en la gráfica
-    count: arr.length,
-  }));
-}
-// Tendencia (kg/día) con regresión lineal sobre los últimos 28 días de registros
-function trend(ws) {
-  if (ws.length < 2) return null;
-  const last = dayNum(ws[ws.length - 1].date);
-  const pts = ws.map(w => ({ x: dayNum(w.date), y: w.kg })).filter(p => p.x > last - 28);
-  if (pts.length < 3 || pts[pts.length - 1].x - pts[0].x < 7) return null;
-  const mx = pts.reduce((s, p) => s + p.x, 0) / pts.length, my = pts.reduce((s, p) => s + p.y, 0) / pts.length;
-  let num_ = 0, den = 0;
-  pts.forEach(p => { num_ += (p.x - mx) * (p.y - my); den += (p.x - mx) ** 2; });
-  return { slope: num_ / den, mean: my, days: pts[pts.length - 1].x - pts[0].x };
-}
-function statusFor(pctMonth) {
-  const { min, max } = state.weightGoal;
-  if (pctMonth == null) return { cls: 'na', txt: '— Sin datos' };
-  if (pctMonth < min) return { cls: 'low', txt: '↓ Por debajo' };
-  if (pctMonth > max) return { cls: 'high', txt: '↑ Por encima' };
-  return { cls: 'ok', txt: '✓ En objetivo' };
-}
-
-function renderLog() {
-  const ws = sortedWeights();
-  const weeks = weeklyAverages(ws);
-  const { min, max } = state.weightGoal;
-  $('#gMin').value = min; $('#gMax').value = max;
-  $('#gMinTxt').textContent = String(min).replace('.', ','); $('#gMaxTxt').textContent = String(max).replace('.', ',');
-  if (!$('#wDate').value) $('#wDate').value = todayStr();
-
-  // Estadísticas
-  const t = trend(ws);
-  const curWeek = weeks[weeks.length - 1];
-  const pctMonth = t ? t.slope * DAYS_PER_MONTH / t.mean * 100 : null;
-  const st = statusFor(pctMonth);
-  const base = curWeek ? curWeek.avg : null;
-  $('#wStats').innerHTML = `
-    <div class="tot"><div class="v">${ws.length ? fmtKg(ws[ws.length - 1].kg) : '—'}</div><div class="l">Último (kg)</div></div>
-    <div class="tot"><div class="v">${base ? fmtKg(base) : '—'}</div><div class="l">Media semana (kg)</div></div>
-    <div class="tot"><div class="v">${pctMonth == null ? '—' : fmtPct(pctMonth, 1)}</div><div class="l">Ritmo / mes</div></div>
-    <div class="tot"><div class="v" style="font-size:15px;line-height:28px">${base ? `${fmtKg(base * (1 + min / 100))}–${fmtKg(base * (1 + max / 100))}` : '—'}</div><div class="l">Meta en 1 mes (kg)</div></div>`;
-
-  // Consejo
-  let advice;
-  if (!ws.length) advice = 'Empieza registrando tu peso. Con unos días de datos te diré si vas al ritmo que quieres.';
-  else if (!t) advice = 'Sigue registrando. Necesito al menos 3 pesajes que abarquen una semana para calcular tu ritmo real.';
+  // --- Evolución por ejercicio ---
+  const withHist = S.exercises.filter(e => S.sessions.some(s => s.entries.some(en => en.exId === e.id && en.sets.some(valid)))).sort(sortEx);
+  h += `<div class="card"><h2>Evolución por ejercicio</h2>`;
+  if (!withHist.length) h += `<div class="empty">Cuando registres series aparecerá aquí tu progreso.</div>`;
   else {
-    const midPct = (min + max) / 2;
-    const targetSlope = t.mean * midPct / 100 / DAYS_PER_MONTH; // kg/día
-    const kcal = Math.round(Math.min(500, Math.abs(targetSlope - t.slope) * KCAL_PER_KG) / 50) * 50;
-    const gainMonth = t.slope * DAYS_PER_MONTH;
-    const ritmo = `Estás ${gainMonth >= 0 ? 'subiendo' : 'bajando'} unos <b>${fmtKg(Math.abs(gainMonth))} kg/mes</b> (${fmtPct(pctMonth, 1)}), según tus últimos ${Math.round(t.days) + 1} días.`;
-    if (st.cls === 'ok') advice = `<span class="status ok">✓ En objetivo</span> ${ritmo} Vas bien, mantén las calorías.`;
-    else if (st.cls === 'low') advice = `<span class="status low">↓ Por debajo</span> ${ritmo} Para acercarte al ${String(midPct).replace('.', ',')}%/mes, prueba a <b>subir unas ${kcal || 50} kcal/día</b>.`;
-    else advice = `<span class="status high">↑ Por encima</span> ${ritmo} Para no acumular grasa de más, prueba a <b>bajar unas ${kcal || 50} kcal/día</b>.`;
-    advice += '<div class="muted" style="margin-top:4px">Estimación orientativa (≈7700 kcal por kg). Haz cambios pequeños y revisa a las 2 semanas.</div>';
+    if (!withHist.some(e => e.id === ui.progEx)) {
+      const recent = [...S.sessions].sort((a, b) => b.date.localeCompare(a.date)).flatMap(s => s.entries).find(en => en.sets.some(valid));
+      ui.progEx = recent ? recent.exId : withHist[0].id;
+    }
+    h += `<select data-field="progEx">${MUSCLES.map(([k, n]) => {
+      const l = withHist.filter(e => e.muscle === k);
+      return l.length ? `<optgroup label="${n}">${l.map(e => `<option value="${e.id}" ${e.id === ui.progEx ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</optgroup>` : '';
+    }).join('')}</select>`;
+    const pts = [];
+    for (const s of [...S.sessions].sort((a, b) => a.date.localeCompare(b.date))) {
+      const sets = s.entries.filter(e => e.exId === ui.progEx).flatMap(e => e.sets.filter(valid));
+      if (!sets.length) continue;
+      let best = sets[0];
+      sets.forEach(x => { if (e1rm(x.w, x.r) > e1rm(best.w, best.r) || (!best.w && x.r > best.r)) best = x; });
+      pts.push({
+        date: s.date, best, n: sets.length,
+        e1rm: Math.max(...sets.map(x => e1rm(x.w, x.r))),
+        wmax: Math.max(...sets.map(x => x.w || 0)),
+        rmax: Math.max(...sets.map(x => x.r)),
+        vol: sets.reduce((a, x) => a + (x.w || 0) * x.r, 0),
+      });
+    }
+    const topE = pts.reduce((a, p) => p.e1rm > a.e1rm ? p : a, pts[0]);
+    const topW = pts.reduce((a, p) => p.wmax > a.wmax ? p : a, pts[0]);
+    const topR = pts.reduce((a, p) => p.rmax > a.rmax ? p : a, pts[0]);
+    h += `<div class="kpis">
+      <div class="kpi"><b>${fmtN(topE.e1rm)} kg</b><span>1RM est. · ${esc(fmtDate(topE.date))}</span></div>
+      <div class="kpi"><b>${fmtN(topW.wmax)} kg</b><span>Peso máx · ${esc(fmtDate(topW.date))}</span></div>
+      <div class="kpi"><b>${topR.rmax}</b><span>Reps máx · ${esc(fmtDate(topR.date))}</span></div></div>`;
+    const M = { e1rm: ['1RM est.', 'kg'], wmax: ['Peso máx', 'kg'], rmax: ['Reps máx', ''], vol: ['Volumen', 'kg'] };
+    h += `<div class="seg">${Object.entries(M).map(([k, [l]]) => `<button class="${ui.metric === k ? 'active' : ''}" data-act="metric" data-m="${k}">${l}</button>`).join('')}</div>`;
+    h += chart(pts, ui.metric);
+    h += `<table><tr><th>Fecha</th><th>Mejor serie</th><th>Series</th><th>1RM est.</th><th>Volumen</th></tr>
+      ${pts.slice(-8).reverse().map(p => `<tr><td>${esc(fmtDate(p.date))}</td><td><b>${fmtN(p.best.w || 0)}×${p.best.r}</b></td><td>${p.n}</td><td>${fmtN(p.e1rm)}</td><td>${fmtK(p.vol)}</td></tr>`).join('')}</table>`;
   }
-  $('#wAdvice').innerHTML = advice;
+  h += `</div>`;
 
-  // Tabla semanal (más reciente arriba)
-  const wkRate = r => r / (DAYS_PER_MONTH / 7); // %/mes -> %/semana
-  $('#wWeeks').innerHTML = weeks.length ? `
-    <p class="muted" style="margin:0 0 6px">Objetivo semanal: ${fmtPct(wkRate(min))} a ${fmtPct(wkRate(max))} respecto a la semana anterior.</p>
-    <table class="weeks"><thead><tr><th>Semana</th><th class="r">Media</th><th class="r">Cambio</th><th class="r">Estado</th></tr></thead><tbody>
-    ${weeks.map((w, i) => {
-      const prev = weeks[i - 1];
-      const gap = prev ? (w.monday - prev.monday) / 7 : 0;
-      const pct = prev ? (w.avg / prev.avg - 1) * 100 : null;
-      const s = pct == null ? { cls: 'na', txt: '—' } : statusFor(pct / gap * DAYS_PER_MONTH / 7);
-      return `<tr>
-        <td>${fmtDate(dayStr(w.monday))}<div class="muted" style="font-size:11px">${w.count} ${w.count === 1 ? 'día' : 'días'}</div></td>
-        <td class="r"><b>${fmtKg(w.avg)}</b> kg</td>
-        <td class="r">${prev ? `${(w.avg - prev.avg >= 0 ? '+' : '') + fmtKg(w.avg - prev.avg)} kg<div class="muted" style="font-size:11px">${fmtPct(pct)}</div>` : '—'}</td>
-        <td class="r"><span class="status ${s.cls}">${s.txt}</span></td></tr>`;
-    }).reverse().join('')}
-    </tbody></table>` : '<div class="empty">Aún no hay registros.</div>';
-
-  // Lista de registros
-  $('#wCount').textContent = `(${ws.length})`;
-  $('#wList').innerHTML = ws.length ? [...ws].reverse().map(w => `
-    <div class="item" data-wdate="${w.date}">
-      <div class="name"><b>${fmtDate(w.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</b></div>
-      <span>${fmtKg(w.kg)} kg</span>
-      <button class="icon" data-wdel title="Borrar">✕</button>
-    </div>`).join('') : '<div class="empty">Sin registros.</div>';
-
-  document.querySelectorAll('#wRange button').forEach(b => b.classList.toggle('on', +b.dataset.r === wRange));
-  renderChart();
+  // --- Historial ---
+  const hist = [...S.sessions].sort((a, b) => b.date.localeCompare(a.date));
+  h += `<div class="card"><h2>Historial</h2>`;
+  if (!hist.length) h += `<div class="empty">Sin entrenos registrados todavía.</div>`;
+  else {
+    h += `<div class="list">` + hist.slice(0, ui.histN).map(s => {
+      const st = sessStats(s);
+      return `<div class="item hist" data-act="openDay" data-date="${s.date}"><div class="name"><b>${esc(s.name)}</b>
+        <span class="muted small">${esc(cap(fmtDate(s.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })))}</span></div>
+        <span class="muted small">${st.n} series · ${fmtK(st.vol)} kg</span></div>`;
+    }).join('') + `</div>`;
+    if (hist.length > ui.histN) h += `<button class="btn ghost block" style="margin-top:8px" data-act="moreHist">Ver más</button>`;
+  }
+  return h + `</div>`;
 }
 
-function renderChart() {
-  const box = $('#wChart');
-  if (!box || !box.offsetParent) return; // pestaña oculta: se dibuja al abrirla
-  const all = sortedWeights();
-  if (!all.length) { box.innerHTML = '<div class="empty">La gráfica aparecerá cuando registres tu peso.</div>'; return; }
-
-  const lastN = dayNum(all[all.length - 1].date);
-  const fromN = Math.max(dayNum(all[0].date), wRange ? lastN - wRange + 1 : -Infinity);
-  const ws = all.filter(w => dayNum(w.date) >= fromN);
-  const weeks = weeklyAverages(all).filter(w => w.x >= fromN - 3);
-  const { min, max } = state.weightGoal;
-
-  // Rango objetivo: parte de la primera media semanal visible
-  const w0 = weeks[0] || { x: dayNum(ws[0].date), avg: ws[0].kg };
-  const endN = Math.max(lastN + 7, w0.x + 14);
-  const bandAt = (n, pct) => w0.avg * Math.pow(1 + pct / 100, (n - w0.x) / DAYS_PER_MONTH);
-
-  const W = box.clientWidth, H = W < 500 ? 220 : 280;
-  const m = { t: 12, r: 12, b: 26, l: 40 };
-  const x0 = Math.min(fromN, w0.x), x1 = endN;
-  const ys = [...ws.map(w => w.kg), ...weeks.map(w => w.avg), bandAt(x1, max), bandAt(x0, min)];
-  let yMin = Math.min(...ys), yMax = Math.max(...ys);
-  const padY = Math.max(0.3, (yMax - yMin) * 0.12);
-  yMin -= padY; yMax += padY;
-  const sx = n => m.l + (n - x0) / Math.max(1, x1 - x0) * (W - m.l - m.r);
-  const sy = v => m.t + (yMax - v) / (yMax - yMin) * (H - m.t - m.b);
-
-  // Ejes
-  const step = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10].find(s => (yMax - yMin) / s <= 5) || 20;
-  const yTicks = [];
-  for (let v = Math.ceil(yMin / step) * step; v <= yMax; v += step) yTicks.push(v);
-  const span = x1 - x0, nX = W < 500 ? 4 : 6;
-  const xTicks = Array.from({ length: nX }, (_, i) => Math.round(x0 + span * (i + 0.5) / nX));
-
-  // Banda objetivo
-  const bandPts = [];
-  for (let i = 0; i <= 30; i++) bandPts.push(w0.x + (x1 - w0.x) * i / 30);
-  const band = bandPts.map(n => `${sx(n)},${sy(bandAt(n, max))}`).join(' ') + ' ' +
-    [...bandPts].reverse().map(n => `${sx(n)},${sy(bandAt(n, min))}`).join(' ');
-
-  const weekPath = weeks.map((w, i) => `${i ? 'L' : 'M'}${sx(w.x)},${sy(w.avg)}`).join('');
-
-  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Gráfica de peso">
-    <g class="grid">${yTicks.map(v => `<line x1="${m.l}" x2="${W - m.r}" y1="${sy(v)}" y2="${sy(v)}"/>`).join('')}</g>
-    <g class="axis">
-      ${yTicks.map(v => `<text x="${m.l - 6}" y="${sy(v) + 4}" text-anchor="end">${(+v.toFixed(2)).toString().replace('.', ',')}</text>`).join('')}
-      ${xTicks.map(n => `<text x="${sx(n)}" y="${H - 6}" text-anchor="middle">${fmtDate(dayStr(n))}</text>`).join('')}
-    </g>
-    <polygon points="${band}" fill="var(--accent)" opacity=".13"/>
-    <line x1="${sx(lastN)}" x2="${sx(lastN)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--border)" stroke-dasharray="3 3"/>
-    ${ws.map(w => `<circle cx="${sx(dayNum(w.date))}" cy="${sy(w.kg)}" r="3.5" fill="var(--muted)" opacity=".55"/>`).join('')}
-    <path d="${weekPath}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-    ${weeks.map(w => `<circle cx="${sx(w.x)}" cy="${sy(w.avg)}" r="4" fill="var(--accent)" stroke="var(--card)" stroke-width="2"/>`).join('')}
-    <g id="wHover" style="display:none">
-      <line y1="${m.t}" y2="${H - m.b}" stroke="var(--muted)" stroke-width="1"/>
-      <circle r="5" fill="var(--text)" stroke="var(--card)" stroke-width="2"/>
-    </g>
-  </svg><div class="chart-tip hidden" id="wTip"></div>`;
-
-  // Tooltip al pasar el ratón / tocar
-  const svg = box.querySelector('svg'), hover = box.querySelector('#wHover'), tip = box.querySelector('#wTip');
-  const weekOf = n => weeklyAverages(all).find(w => w.monday === mondayOf(n));
-  const move = ev => {
-    const rect = svg.getBoundingClientRect();
-    const px = (ev.clientX - rect.left) * (W / rect.width);
-    let best = null, bd = Infinity;
-    ws.forEach(w => { const d = Math.abs(sx(dayNum(w.date)) - px); if (d < bd) { bd = d; best = w; } });
-    if (!best || bd > 40) return hide();
-    const cx = sx(dayNum(best.date)), cy = sy(best.kg);
-    hover.style.display = '';
-    hover.querySelector('line').setAttribute('x1', cx); hover.querySelector('line').setAttribute('x2', cx);
-    hover.querySelector('circle').setAttribute('cx', cx); hover.querySelector('circle').setAttribute('cy', cy);
-    const wk = weekOf(dayNum(best.date));
-    tip.innerHTML = `<b>${fmtDate(best.date, { weekday: 'short', day: 'numeric', month: 'short' })}</b><br>${fmtKg(best.kg)} kg<br><span class="muted">Media semana: ${fmtKg(wk.avg)} kg</span>`;
-    tip.classList.remove('hidden');
-    const left = cx / W * rect.width;
-    tip.style.left = Math.min(rect.width - tip.offsetWidth / 2, Math.max(tip.offsetWidth / 2, left)) + 'px';
-    tip.style.top = Math.max(tip.offsetHeight, cy / H * rect.height - 10) + 'px';
-  };
-  const hide = () => { hover.style.display = 'none'; tip.classList.add('hidden'); };
-  svg.addEventListener('pointermove', move);
-  svg.addEventListener('pointerdown', move);
-  svg.addEventListener('pointerleave', hide);
+function chart(pts, key) {
+  const W = 340, H = 170, pl = 38, pr = 12, pt = 12, pb = 24;
+  const xs = pts.map(p => parseYmd(p.date).getTime()), ys = pts.map(p => p[key]);
+  let x0 = Math.min(...xs), x1 = Math.max(...xs);
+  if (x0 === x1) { x0 -= 3 * 864e5; x1 += 3 * 864e5; }
+  let y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const py = (y1 - y0) * 0.15 || Math.max(1, y1 * 0.1);
+  y0 = Math.max(0, y0 - py); y1 += py;
+  const X = t => pl + (t - x0) / (x1 - x0) * (W - pl - pr);
+  const Y = v => pt + (1 - (v - y0) / (y1 - y0)) * (H - pt - pb);
+  let g = '';
+  for (let i = 0; i <= 3; i++) {
+    const v = y0 + (y1 - y0) * i / 3, y = Y(v);
+    g += `<line x1="${pl}" x2="${W - pr}" y1="${y}" y2="${y}" stroke="var(--border)" stroke-width="1"/>
+      <text x="${pl - 6}" y="${y + 3}" text-anchor="end">${fmtK(v)}</text>`;
+  }
+  const d = pts.map((p, i) => `${i ? 'L' : 'M'}${X(xs[i]).toFixed(1)},${Y(p[key]).toFixed(1)}`).join(' ');
+  const dots = pts.map((p, i) => `<circle cx="${X(xs[i]).toFixed(1)}" cy="${Y(p[key]).toFixed(1)}" r="3.5" fill="var(--card)" stroke="var(--accent)" stroke-width="2"><title>${esc(fmtDate(p.date))}: ${fmtN(p[key])}</title></circle>`).join('');
+  const lx = `<text x="${X(xs[0])}" y="${H - 6}" text-anchor="${pts.length > 1 ? 'start' : 'middle'}">${esc(fmtDate(pts[0].date))}</text>` +
+    (pts.length > 1 ? `<text x="${X(xs[xs.length - 1])}" y="${H - 6}" text-anchor="end">${esc(fmtDate(pts[pts.length - 1].date))}</text>` : '');
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Gráfica de evolución">${g}
+    <path d="${d}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>${dots}${lx}</svg>`;
 }
 
-$('#wForm').addEventListener('submit', e => {
-  e.preventDefault();
-  const date = $('#wDate').value, kg = num($('#wKg').value);
-  if (!date || !kg) return;
-  const existing = state.weights.find(w => w.date === date);
-  if (existing) existing.kg = kg; else state.weights.push({ date, kg });
-  $('#wKg').value = '';
-  save(); renderLog(); toast(existing ? 'Registro actualizado' : 'Peso guardado');
-});
-$('#wList').addEventListener('click', e => {
-  if (!e.target.closest('[data-wdel]')) return;
-  const date = e.target.closest('[data-wdate]').dataset.wdate;
-  if (!confirm(`¿Borrar el registro del ${fmtDate(date)}?`)) return;
-  state.weights = state.weights.filter(w => w.date !== date);
-  save(); renderLog();
-});
-$('#wRange').addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b) return;
-  wRange = +b.dataset.r;
-  try { localStorage.setItem(KEY + '-wrange', wRange); } catch (err) {}
-  renderLog();
-});
-['#gMin', '#gMax'].forEach(sel => $(sel).addEventListener('change', () => {
-  let a = num($('#gMin').value), b = num($('#gMax').value);
-  if (a > b) [a, b] = [b, a];
-  state.weightGoal = { min: a, max: b };
-  save(); renderLog();
-}));
-let resizeT;
-window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(renderChart, 150); });
-
-function renderAll() { renderFoods(); renderRecipes(); renderCalc(); renderPlan(); renderLog(); }
-renderAll();
-try { showTab(localStorage.getItem(KEY + '-tab') || 'foods'); } catch (e) { showTab('foods'); }
-
-if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+function vDatos() {
+  const lb = S.meta.lastBackup;
+  return `<div class="card"><h2>💾 Copia de seguridad</h2>
+    <p class="muted small" style="margin-top:0">Los datos se guardan solo en este dispositivo. Exporta de vez en cuando para no perderlos si cambias de móvil o se borra el navegador.</p>
+    <p class="small">Última copia: <b>${lb ? esc(fmtDate(lb, { day: 'numeric', month: 'long', year: 'numeric' })) : 'nunca'}</b></p>
+    <div class="row"><button class="btn" data-act="export">Exportar datos</button>
+      ${navigator.canShare ? `<button class="btn ghost" data-act="share">Compartir…</button>` : ''}
+      <button class="btn ghost" data-act="import">Importar…</button></div>
+    <input type="file" id="importFile" accept="application/json,.json" hidden data-field="import">
+  </div>
+  <div class="card"><h2>Resumen</h2><div class="stats">
+    <div class="stat"><b>${S.exercises.filter(e => !e.archived).length}</b><span>ejercicios</span></div>
+    <div class="stat"><b>${S.routines.length}</b><span>entrenos</span></div>
+    <div class="stat"><b>${S.sessions.length}</b><span>sesiones</span></div></div></div>`;
 }
+
+// ---------- acciones ----------
+const cur = () => sessionOn(ui.date);
+function backupFile() {
+  const blob = new Blob([JSON.stringify(S, null, 1)], { type: 'application/json' });
+  return new File([blob], `gym-backup-${today()}.json`, { type: 'application/json' });
+}
+function markBackup() { S.meta.lastBackup = today(); save(); render(); toast('Copia exportada'); }
+
+const A = {
+  tab: t => { ui.tab = t.dataset.tab; if (ui.tab === 'hoy') ui.date = ui.date || today(); render(); scrollTo(0, 0); },
+  day: t => { ui.date = addDays(ui.date, +t.dataset.n); render(); },
+  goToday: () => { ui.date = today(); render(); },
+  openDay: t => { ui.date = t.dataset.date; ui.tab = 'hoy'; render(); scrollTo(0, 0); },
+  start: t => {
+    const r = routineById(t.dataset.id);
+    S.sessions.push({
+      id: uid(), date: ui.date, routineId: r ? r.id : null, name: r ? r.name : 'Entreno libre',
+      entries: r ? r.items.filter(it => exById(it.exId)).map(it => ({
+        exId: it.exId, target: it.sets ? `${it.sets} × ${it.reps || '?'}` : '',
+        sets: Array.from({ length: Math.max(1, it.sets || 1) }, () => ({ w: null, r: null })),
+      })) : [],
+    });
+    save(); render();
+  },
+  delSession: () => {
+    if (!confirm('¿Borrar el entreno de este día y todas sus series?')) return;
+    S.sessions = S.sessions.filter(s => s !== cur()); save(); render();
+  },
+  addEntry: () => {
+    const id = document.getElementById('addEntry').value;
+    if (!id) return toast('Elige un ejercicio');
+    cur().entries.push({ exId: id, target: '', sets: [{ w: null, r: null }] }); save(); render();
+  },
+  moveEntry: t => {
+    const a = cur().entries, i = +t.dataset.i, j = i + +t.dataset.n;
+    if (j < 0 || j >= a.length) return;
+    [a[i], a[j]] = [a[j], a[i]]; save(); render();
+  },
+  delEntry: t => {
+    const a = cur().entries, i = +t.dataset.i;
+    if (a[i].sets.some(valid) && !confirm('Este ejercicio tiene series registradas. ¿Quitarlo?')) return;
+    a.splice(i, 1); save(); render();
+  },
+  addSet: t => {
+    const sets = cur().entries[+t.dataset.i].sets, prev = sets[sets.length - 1];
+    sets.push({ w: prev ? prev.w : null, r: null }); save(); render();
+  },
+  delSet: t => {
+    const row = t.closest('.set'), sets = cur().entries[+row.dataset.i].sets;
+    sets.splice(+row.dataset.j, 1); save(); render();
+  },
+  fillSet: t => {
+    const row = t.closest('.set'), i = +row.dataset.i, j = +row.dataset.j, en = cur().entries[i], st = en.sets[j];
+    const ph = phFor(lastPerf(en.exId, ui.date), en, j);
+    if (st.w == null && ph) st.w = ph.w;
+    if (st.r == null && ph) st.r = ph.r;
+    if (st.r == null) { row.querySelector('[data-field=r]').focus(); return toast('Escribe las repeticiones'); }
+    save(); render();
+  },
+  newRoutine: () => {
+    S.routines.push({ id: uid(), name: `Entreno ${String.fromCharCode(65 + S.routines.length % 26)}`, items: [] });
+    save(); render();
+    const inputs = document.querySelectorAll('[data-field=rname]'); const last = inputs[inputs.length - 1];
+    if (last) { last.focus(); last.select(); }
+  },
+  delRoutine: t => {
+    const r = routineById(t.dataset.id);
+    if (!confirm(`¿Borrar el entreno “${r.name}”? Tu historial no se borra.`)) return;
+    S.routines = S.routines.filter(x => x !== r);
+    S.week = S.week.map(w => w === r.id ? null : w); save(); render();
+  },
+  addItem: t => {
+    const id = document.getElementById('add-' + t.dataset.id).value;
+    if (!id) return toast('Elige un ejercicio');
+    routineById(t.dataset.id).items.push({ exId: id, sets: 3, reps: '8-12' }); save(); render();
+  },
+  moveItem: t => {
+    const a = routineById(t.dataset.id).items, i = +t.dataset.k, j = i + +t.dataset.n;
+    if (j < 0 || j >= a.length) return;
+    [a[i], a[j]] = [a[j], a[i]]; save(); render();
+  },
+  delItem: t => { routineById(t.dataset.id).items.splice(+t.dataset.k, 1); save(); render(); },
+  addEx: () => {
+    const inp = document.getElementById('newExName'), name = inp.value.trim(), muscle = document.getElementById('newExMuscle').value;
+    if (!name) { inp.focus(); return toast('Escribe un nombre'); }
+    if (S.exercises.some(e => !e.archived && e.name.toLowerCase() === name.toLowerCase())) return toast('Ya existe ese ejercicio');
+    S.exercises.push({ id: uid(), name, muscle }); save(); render();
+    const i2 = document.getElementById('newExName'); document.getElementById('newExMuscle').value = muscle; i2.focus();
+    toast(`Añadido: ${name}`);
+  },
+  delEx: t => {
+    const e = exById(t.dataset.id);
+    const used = S.sessions.some(s => s.entries.some(en => en.exId === e.id));
+    if (!confirm(used ? `“${e.name}” tiene historial. Se ocultará de las listas pero su historial se conserva. ¿Continuar?` : `¿Borrar “${e.name}”?`)) return;
+    S.routines.forEach(r => r.items = r.items.filter(it => it.exId !== e.id));
+    if (used) e.archived = true; else S.exercises = S.exercises.filter(x => x !== e);
+    save(); render();
+  },
+  week: t => { ui.weekOff = Math.min(0, ui.weekOff + +t.dataset.n); render(); },
+  month: t => { ui.monthOff = Math.min(0, ui.monthOff + +t.dataset.n); render(); },
+  metric: t => { ui.metric = t.dataset.m; render(); },
+  moreHist: () => { ui.histN += 20; render(); },
+  export: () => {
+    const a = document.createElement('a'), f = backupFile();
+    a.href = URL.createObjectURL(f); a.download = f.name; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    markBackup();
+  },
+  share: async () => {
+    const f = backupFile();
+    if (!navigator.canShare({ files: [f] })) return A.export();
+    try { await navigator.share({ files: [f], title: 'Copia de Gym' }); markBackup(); } catch {}
+  },
+  import: () => document.getElementById('importFile').click(),
+};
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-act]');
+  if (t && A[t.dataset.act]) A[t.dataset.act](t);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'newExName') A.addEx();
+});
+
+// Escritura sin redibujar (para no perder el foco mientras se escribe)
+document.addEventListener('input', e => {
+  const t = e.target, f = t.dataset.field;
+  if (f === 'w' || f === 'r') {
+    const row = t.closest('.set'), s = cur(), en = s.entries[+row.dataset.i], st = en.sets[+row.dataset.j];
+    const v = num(t.value);
+    st[f] = f === 'r' ? (v == null ? null : Math.max(0, Math.round(v))) : (v == null ? null : Math.max(0, v));
+    save();
+    row.classList.toggle('ok', valid(st));
+    row.querySelector('.pr').textContent = isPR(st, bestBefore(en.exId, ui.date)) ? '🏆' : '';
+    const ss = sessStats(s);
+    document.getElementById('st-n').textContent = ss.n;
+    document.getElementById('st-v').textContent = fmtK(ss.vol);
+  } else if (f === 'sname') { cur().name = t.value; save(); }
+  else if (f === 'rname') { routineById(t.dataset.id).name = t.value; save(); }
+  else if (f === 'itSets') { const v = num(t.value); routineById(t.dataset.id).items[+t.dataset.k].sets = v == null ? null : Math.max(0, Math.round(v)); save(); }
+  else if (f === 'itReps') { routineById(t.dataset.id).items[+t.dataset.k].reps = t.value.trim(); save(); }
+  else if (f === 'exName') { const v = t.value.trim(); if (v) { exById(t.dataset.id).name = v; save(); } }
+});
+document.addEventListener('change', e => {
+  const t = e.target, f = t.dataset.field;
+  if (f === 'date') { if (t.value) { ui.date = t.value; render(); } }
+  else if (f === 'week') { S.week[+t.dataset.d] = t.value || null; save(); }
+  else if (f === 'exMuscle') { exById(t.dataset.id).muscle = t.value; save(); render(); }
+  else if (f === 'progEx') { ui.progEx = t.value; render(); }
+  else if (f === 'rname') render(); // refresca los selectores de la semana
+  else if (f === 'exName' && !t.value.trim()) render();
+  else if (f === 'import') {
+    const file = t.files[0]; if (!file) return;
+    file.text().then(txt => {
+      const d = JSON.parse(txt);
+      if (!d || !Array.isArray(d.exercises) || !Array.isArray(d.sessions)) throw new Error();
+      if (!confirm(`El archivo tiene ${d.exercises.length} ejercicios y ${d.sessions.length} sesiones. Sustituirá todos los datos actuales. ¿Continuar?`)) return;
+      S = Object.assign(blank(), d); save(); render(); toast('Datos importados');
+    }).catch(() => toast('⚠️ Archivo no válido'));
+    t.value = '';
+  }
+});
+
+render();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 </script>
 </body>
 </html>
