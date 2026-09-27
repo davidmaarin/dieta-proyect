@@ -113,6 +113,56 @@
     font-size: 14px; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20;
   }
   .toast.show { opacity: 1; }
+
+  /* ---------- Registro ---------- */
+  .seg { display: inline-flex; background: var(--bg); border-radius: 8px; padding: 2px; gap: 2px; }
+  .seg button { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 6px; cursor: pointer; }
+  .seg button.on { background: var(--card); color: var(--text); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+  .chart-wrap { position: relative; margin-top: 10px; touch-action: pan-y; }
+  .chart-wrap svg { display: block; width: 100%; overflow: visible; }
+  .chart-wrap .axis text { fill: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .chart-wrap .grid line { stroke: var(--border); stroke-width: 1; }
+  .chart-tip {
+    position: absolute; pointer-events: none; background: var(--card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 9px; font-size: 12px; white-space: nowrap; box-shadow: 0 4px 12px rgba(0,0,0,.15);
+    transform: translate(-50%, -100%); top: 0;
+  }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .legend i { display: inline-block; vertical-align: middle; margin-right: 5px; }
+  .status { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .status.ok { background: var(--accent-soft); color: var(--accent); }
+  .status.low { background: rgba(217,119,6,.14); color: var(--c); }
+  .status.high { background: rgba(220,38,38,.12); color: var(--danger); }
+  .status.na { background: var(--bg); color: var(--muted); }
+  table.weeks { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  table.weeks th { text-align: left; font-weight: 500; color: var(--muted); font-size: 12px; padding: 6px 4px; border-bottom: 1px solid var(--border); }
+  table.weeks td { padding: 8px 4px; border-bottom: 1px solid var(--border); }
+  table.weeks tr:last-child td { border-bottom: 0; }
+  table.weeks .r { text-align: right; }
+  /* ---------- Recetas ---------- */
+  .rtoggle { border: 0; background: none; color: var(--accent); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; padding: 3px 0 0; }
+  .recipe-preview { background: var(--bg); border-radius: 8px; padding: 8px 10px; margin: 0 0 8px; font-size: 13px; }
+  .recipe-preview .ing { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .recipe-preview .ing:last-child { border-bottom: 0; }
+  .recipe-preview .ing .macros { justify-content: flex-end; }
+  .unit { flex: none; align-self: center; font-size: 13px; color: var(--muted); min-width: 26px; }
+  .editor { background: var(--bg); border-radius: 10px; padding: 12px; margin: 10px 0; }
+  .editor input, .editor select { background: var(--card); }
+
+  /* ---------- Días del planificador ---------- */
+  .days { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: thin; }
+  .chip {
+    flex: none; border: 1px solid var(--border); background: var(--bg); color: var(--text); font: inherit; font-size: 14px;
+    border-radius: 10px; padding: 6px 12px; cursor: pointer; text-align: left; line-height: 1.2;
+  }
+  .chip small { display: block; font-size: 11px; color: var(--muted); }
+  .chip.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .chip.add { color: var(--accent); font-weight: 600; border-style: dashed; }
+  .copy-panel { background: var(--bg); border-radius: 10px; padding: 10px; margin-bottom: 8px; }
+  .copy-panel select { background: var(--card); margin: 6px 0 8px; }
+
+  @media (max-width: 500px) { #wStats { grid-template-columns: repeat(2, 1fr); } }
+  .advice { background: var(--bg); border-radius: 10px; padding: 10px 12px; font-size: 14px; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -129,6 +179,7 @@
   <button data-tab="foods" class="active"><span>🍎</span>Alimentos</button>
   <button data-tab="calc"><span>🧮</span>Calculadora</button>
   <button data-tab="plan"><span>📅</span>Planificador</button>
+  <button data-tab="log"><span>⚖️</span>Registro</button>
 </nav>
 
 <main>
@@ -152,6 +203,14 @@
       <input class="search" id="foodSearch" placeholder="🔍 Buscar...">
       <div class="list" id="foodList"></div>
     </div>
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2 style="margin:0">📖 Mis recetas <span class="muted" id="recipeCount"></span></h2>
+        <button class="btn small" id="recipeNew">+ Nueva receta</button>
+      </div>
+      <div class="editor hidden" id="recipeEditor"></div>
+      <div class="list" id="recipeList" style="margin-top:6px"></div>
+    </div>
   </section>
 
   <!-- CALCULADORA -->
@@ -161,6 +220,7 @@
       <div class="add-row">
         <select id="calcFood"></select>
         <input id="calcG" type="number" min="0" step="any" inputmode="decimal" placeholder="g" value="100">
+        <span class="unit">g</span>
         <button class="btn" id="calcAdd">+</button>
       </div>
     </div>
@@ -177,7 +237,13 @@
   <!-- PLANIFICADOR -->
   <section id="tab-plan" class="hidden">
     <div class="card">
-      <div class="row" style="justify-content:space-between;align-items:center">
+      <div class="days" id="dayTabs"></div>
+      <div class="row" style="margin-top:10px;align-items:center">
+        <label class="wide">Nombre del día<input id="dayName" placeholder="Ej: Lunes, Día de entreno..."></label>
+        <button class="btn ghost small" id="dayDup" title="Crear un día nuevo copiando este">⧉ Duplicar día</button>
+        <button class="btn ghost small" id="dayDel" title="Borrar este día">🗑 Borrar día</button>
+      </div>
+      <div class="row" style="justify-content:space-between;align-items:center;margin-top:12px">
         <h2 style="margin:0">Número de comidas</h2>
         <div class="stepper">
           <button class="btn ghost small" id="mealsMinus">−</button>
@@ -187,7 +253,7 @@
       </div>
     </div>
     <div class="card">
-      <h2>Total del día</h2>
+      <h2>Total de <span id="planDayTitle">hoy</span></h2>
       <div class="totals" id="planTotals"></div>
       <details style="margin-top:10px">
         <summary class="muted" style="cursor:pointer">🎯 Objetivos diarios (opcional)</summary>
@@ -200,7 +266,60 @@
       </details>
     </div>
     <div id="meals"></div>
-    <div class="card"><button class="btn ghost small" id="planClear">Vaciar todas las comidas</button></div>
+    <div class="card"><button class="btn ghost small" id="planClear">Vaciar todas las comidas de este día</button></div>
+  </section>
+
+  <!-- REGISTRO -->
+  <section id="tab-log" class="hidden">
+    <div class="card">
+      <h2>Registrar peso</h2>
+      <form id="wForm" class="row" autocomplete="off">
+        <label>Fecha<input id="wDate" type="date" required></label>
+        <label>Peso (kg)<input id="wKg" type="number" step="0.01" min="20" max="400" inputmode="decimal" required placeholder="Ej: 72.4"></label>
+        <button class="btn" type="submit">Guardar</button>
+      </form>
+      <p class="muted" style="margin:8px 0 0">Pésate siempre en las mismas condiciones (por ejemplo, en ayunas y después de ir al baño). Si ya hay un registro ese día, se sustituye.</p>
+    </div>
+
+    <div class="card">
+      <h2>Progreso</h2>
+      <div class="totals" id="wStats"></div>
+      <div class="advice" id="wAdvice"></div>
+      <details style="margin-top:10px">
+        <summary class="muted" style="cursor:pointer">🎯 Objetivo: subir entre <b id="gMinTxt"></b>% y <b id="gMaxTxt"></b>% al mes</summary>
+        <div class="row" style="margin-top:8px">
+          <label>Mínimo % / mes<input id="gMin" type="number" step="0.1" min="0" inputmode="decimal"></label>
+          <label>Máximo % / mes<input id="gMax" type="number" step="0.1" min="0" inputmode="decimal"></label>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2 style="margin:0">Gráfica</h2>
+        <div class="seg" id="wRange">
+          <button data-r="30">1M</button><button data-r="90">3M</button><button data-r="180">6M</button><button data-r="0">Todo</button>
+        </div>
+      </div>
+      <div class="chart-wrap" id="wChart"></div>
+      <div class="legend">
+        <span><i style="width:8px;height:8px;border-radius:50%;background:var(--muted);opacity:.6"></i>Peso diario</span>
+        <span><i style="width:16px;height:2px;background:var(--accent)"></i>Media semanal</span>
+        <span><i style="width:14px;height:10px;background:var(--accent);opacity:.15;border-radius:2px"></i>Rango objetivo</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Medias semanales</h2>
+      <div id="wWeeks"></div>
+    </div>
+
+    <div class="card">
+      <details>
+        <summary style="cursor:pointer;font-weight:600">Todos los registros <span class="muted" id="wCount"></span></summary>
+        <div class="list" id="wList" style="margin-top:6px"></div>
+      </details>
+    </div>
   </section>
 </main>
 
@@ -239,11 +358,20 @@ function load() {
   });
 }
 function normalize(s) {
+  // Antes solo había un día (s.meals); ahora hay varios (s.days). Lo antiguo pasa a ser el "Día 1".
+  const days = Array.isArray(s.days) && s.days.length ? s.days : [{
+    id: uid(), name: 'Día 1',
+    meals: s.meals && s.meals.length ? s.meals : ['Desayuno', 'Comida', 'Merienda', 'Cena'].map(n => ({ id: uid(), name: n, items: [] })),
+  }];
   return {
     foods: s.foods || [],
     calc: s.calc || [],
-    meals: s.meals && s.meals.length ? s.meals : ['Desayuno', 'Comida', 'Merienda', 'Cena'].map(n => ({ id: uid(), name: n, items: [] })),
+    days,
+    dayId: days.some(d => d.id === s.dayId) ? s.dayId : days[0].id,
     targets: s.targets || {},
+    recipes: Array.isArray(s.recipes) ? s.recipes : [],
+    weights: Array.isArray(s.weights) ? s.weights : [],
+    weightGoal: s.weightGoal || { min: 0.5, max: 1 },
   };
 }
 function save() {
@@ -255,15 +383,27 @@ function toast(msg) {
 }
 
 const foodById = id => state.foods.find(f => f.id === id);
+const curDay = () => state.days.find(d => d.id === state.dayId) || state.days[0];
+const allMeals = () => state.days.flatMap(d => d.meals);
 function macrosFor(foodId, g) {
   const f = foodById(foodId);
   if (!f) return { k: 0, p: 0, c: 0, f: 0 };
   const m = g / 100;
   return { k: f.k * m, p: f.p * m, c: f.c * m, f: f.f * m };
 }
+const recipeById = id => state.recipes.find(r => r.id === id);
+const recipeWeight = r => r.items.reduce((s, it) => s + it.g, 0);
+// Una línea puede ser un alimento ({foodId, g}) o una receta ({recipeId, q} con q = raciones)
+function itemMacros(it) {
+  if (!it.recipeId) return macrosFor(it.foodId, it.g);
+  const r = recipeById(it.recipeId);
+  if (!r) return { k: 0, p: 0, c: 0, f: 0 };
+  const m = sum(r.items);
+  return { k: m.k * it.q, p: m.p * it.q, c: m.c * it.q, f: m.f * it.q };
+}
 function sum(items) {
   return items.reduce((a, it) => {
-    const m = macrosFor(it.foodId, it.g);
+    const m = itemMacros(it);
     a.k += m.k; a.p += m.p; a.c += m.c; a.f += m.f; return a;
   }, { k: 0, p: 0, c: 0, f: 0 });
 }
@@ -280,13 +420,52 @@ function totalsHTML(t, targets = {}) {
   }).join('');
 }
 
-function foodOptions() {
+function foodOptions(withRecipes = true) {
   if (!state.foods.length) return '<option value="">— Primero añade alimentos —</option>';
-  return [...state.foods].sort((a, b) => a.name.localeCompare(b.name, 'es'))
+  const foods = [...state.foods].sort((a, b) => a.name.localeCompare(b.name, 'es'))
     .map(f => `<option value="${f.id}">${esc(f.name)}</option>`).join('');
+  if (!withRecipes || !state.recipes.length) return foods;
+  const recipes = [...state.recipes].sort((a, b) => a.name.localeCompare(b.name, 'es'))
+    .map(r => `<option value="r:${r.id}">📖 ${esc(r.name)}</option>`).join('');
+  return `<optgroup label="Alimentos">${foods}</optgroup><optgroup label="Recetas (raciones)">${recipes}</optgroup>`;
+}
+// Crea la línea a añadir según lo elegido en el selector
+function newItem(value, qty) {
+  if (value.startsWith('r:')) return { id: uid(), recipeId: value.slice(2), q: num(qty) || 1 };
+  return { id: uid(), foodId: value, g: num(qty) || 100 };
+}
+// Al elegir una receta la cantidad pasa a raciones; al volver a un alimento, a gramos
+function syncUnit(sel) {
+  const row = sel.closest('.add-row'); if (!row) return;
+  const inp = row.querySelector('input'), unit = row.querySelector('.unit');
+  const isRecipe = sel.value.startsWith('r:');
+  if (!unit || (unit.textContent === 'rac.') === isRecipe) return;
+  unit.textContent = isRecipe ? 'rac.' : 'g';
+  inp.value = isRecipe ? 1 : 100;
+  inp.step = isRecipe ? '0.25' : 'any';
+}
+document.addEventListener('change', e => { if (e.target.matches('.add-row select')) syncUnit(e.target); });
+
+const openPreviews = new Set();
+function recipePreviewHTML(r, q) {
+  if (!r.items.length) return '<div class="empty">Receta vacía.</div>';
+  return r.items.map(it => {
+    const f = foodById(it.foodId), g = it.g * q;
+    return `<div class="ing"><span>${f ? esc(f.name) : '<i>(borrado)</i>'} · <b>${r1(g)} g</b></span><span class="macros">${macroLine(macrosFor(it.foodId, g))}</span></div>`;
+  }).join('') + `<div class="muted" style="margin-top:4px">Total: ${r1(recipeWeight(r) * q)} g${q !== 1 ? ` (${q} × ${r1(recipeWeight(r))} g)` : ''}</div>`;
 }
 
 function itemRowHTML(it, ctx) {
+  if (it.recipeId) {
+    const r = recipeById(it.recipeId);
+    const open = openPreviews.has(it.id);
+    return `<div class="item" data-ctx="${ctx}" data-id="${it.id}">
+      <div class="name"><b>📖 ${r ? esc(r.name) : '<i>(receta borrada)</i>'}</b><div class="macros">${macroLine(itemMacros(it))}</div>
+        ${r ? `<button class="rtoggle" data-rtoggle>${open ? '▾ Ocultar ingredientes' : '▸ Ver ingredientes'}</button>` : ''}</div>
+      <input class="g" type="number" min="0" step="0.25" inputmode="decimal" value="${it.q}" aria-label="raciones"> <span class="muted">rac.</span>
+      <button class="icon" data-del title="Quitar">✕</button>
+    </div>${r ? `<div class="recipe-preview${open ? '' : ' hidden'}">${recipePreviewHTML(r, it.q)}</div>` : ''}`;
+  }
   const f = foodById(it.foodId);
   const m = macrosFor(it.foodId, it.g);
   return `<div class="item" data-ctx="${ctx}" data-id="${it.id}">
@@ -349,20 +528,112 @@ $('#foodList').addEventListener('click', e => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     $('#fName').focus();
   } else if (e.target.closest('[data-delfood]')) {
-    const used = state.calc.some(i => i.foodId === f.id) || state.meals.some(m => m.items.some(i => i.foodId === f.id));
-    if (!confirm(`¿Borrar "${f.name}"?${used ? '\nTambién se quitará de la calculadora y del planificador.' : ''}`)) return;
+    const used = state.calc.some(i => i.foodId === f.id) || allMeals().some(m => m.items.some(i => i.foodId === f.id))
+      || state.recipes.some(r => r.items.some(i => i.foodId === f.id));
+    if (!confirm(`¿Borrar "${f.name}"?${used ? '\nTambién se quitará de la calculadora, del planificador y de las recetas que lo lleven.' : ''}`)) return;
     state.foods = state.foods.filter(x => x.id !== f.id);
     state.calc = state.calc.filter(i => i.foodId !== f.id);
-    state.meals.forEach(m => m.items = m.items.filter(i => i.foodId !== f.id));
+    allMeals().forEach(m => m.items = m.items.filter(i => i.foodId !== f.id));
+    state.recipes.forEach(r => r.items = r.items.filter(i => i.foodId !== f.id));
     save(); renderAll();
   }
+});
+
+/* ---------- RECETAS ---------- */
+let draft = null; // receta que se está creando/editando
+function renderRecipes() {
+  $('#recipeCount').textContent = `(${state.recipes.length})`;
+  const list = [...state.recipes].sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  $('#recipeList').innerHTML = list.length ? list.map(r => `
+    <div class="item" data-rid="${r.id}">
+      <div class="name"><b>📖 ${esc(r.name)}</b>
+        <div class="macros">${macroLine(sum(r.items))} <span>· ${r1(recipeWeight(r))} g</span></div>
+        <div class="muted" style="font-size:12px">${r.items.map(i => { const f = foodById(i.foodId); return f ? `${esc(f.name)} ${r1(i.g)} g` : ''; }).filter(Boolean).join(' · ')}</div>
+      </div>
+      <button class="icon edit" data-redit title="Editar">✎</button>
+      <button class="icon" data-rdel title="Borrar">🗑</button>
+    </div>`).join('') : (draft ? '' : '<div class="empty">Aún no tienes recetas. Crea una con los alimentos de tu lista.</div>');
+  renderRecipeEditor();
+}
+function renderRecipeEditor() {
+  const box = $('#recipeEditor');
+  box.classList.toggle('hidden', !draft);
+  if (!draft) { box.innerHTML = ''; return; }
+  box.innerHTML = `
+    <label>Nombre de la receta<input id="rName" value="${esc(draft.name)}" placeholder="Ej: Tortilla de avena"></label>
+    <div class="muted" style="margin:10px 0 2px">Ingredientes (receta completa = 1 ración)</div>
+    <div class="list">${draft.items.length ? draft.items.map(it => itemRowHTML(it, 'recipe')).join('') : '<div class="empty">Añade ingredientes abajo.</div>'}</div>
+    <div class="add-row">
+      <select id="rFood">${foodOptions(false)}</select>
+      <input id="rG" type="number" min="0" step="any" inputmode="decimal" value="100" placeholder="g">
+      <span class="unit">g</span>
+      <button class="btn" id="rAdd" type="button">+</button>
+    </div>
+    <div class="meal-sum" id="rSum"></div>
+    <div class="row">
+      <button class="btn" id="rSave" type="button">Guardar receta</button>
+      <button class="btn ghost" id="rCancel" type="button">Cancelar</button>
+    </div>`;
+  renderDraftSum();
+}
+function renderDraftSum() {
+  if (draft) $('#rSum').innerHTML = `Total: ${macroLine(sum(draft.items))} <span class="muted">· ${r1(recipeWeight(draft))} g</span>`;
+}
+function openEditor(r) {
+  draft = r ? { id: r.id, name: r.name, items: r.items.map(i => ({ ...i })) } : { id: null, name: '', items: [] };
+  renderRecipes();
+  $('#recipeEditor').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('#rName').focus();
+}
+$('#recipeNew').addEventListener('click', () => openEditor(null));
+$('#recipeEditor').addEventListener('input', e => { if (e.target.id === 'rName') draft.name = e.target.value; });
+$('#recipeEditor').addEventListener('click', e => {
+  if (e.target.id === 'rAdd') {
+    const foodId = $('#rFood').value; if (!foodId) return;
+    draft.items.push({ id: uid(), foodId, g: num($('#rG').value) || 100 });
+    const keep = foodId; renderRecipeEditor(); $('#rFood').value = keep;
+  } else if (e.target.id === 'rCancel') {
+    draft = null; renderRecipes();
+  } else if (e.target.id === 'rSave') {
+    const name = draft.name.trim();
+    if (!name) { alert('Ponle un nombre a la receta.'); return; }
+    if (!draft.items.length) { alert('Añade al menos un ingrediente.'); return; }
+    const data = { name, items: draft.items };
+    const existing = draft.id && recipeById(draft.id);
+    if (existing) Object.assign(existing, data); else state.recipes.push({ id: uid(), ...data });
+    toast(existing ? 'Receta actualizada' : 'Receta guardada');
+    draft = null; save(); renderAll();
+  }
+});
+$('#recipeList').addEventListener('click', e => {
+  const row = e.target.closest('[data-rid]'); if (!row) return;
+  const r = recipeById(row.dataset.rid);
+  if (e.target.closest('[data-redit]')) openEditor(r);
+  else if (e.target.closest('[data-rdel]')) {
+    const used = state.calc.some(i => i.recipeId === r.id) || allMeals().some(m => m.items.some(i => i.recipeId === r.id));
+    if (!confirm(`¿Borrar la receta "${r.name}"?${used ? '\nTambién se quitará de la calculadora y del planificador.' : ''}`)) return;
+    state.recipes = state.recipes.filter(x => x.id !== r.id);
+    state.calc = state.calc.filter(i => i.recipeId !== r.id);
+    allMeals().forEach(m => m.items = m.items.filter(i => i.recipeId !== r.id));
+    save(); renderAll();
+  }
+});
+// Desplegar / plegar ingredientes de una receta en calculadora y planificador
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-rtoggle]'); if (!btn) return;
+  const row = btn.closest('.item'), prev = row.nextElementSibling, id = row.dataset.id;
+  const open = !openPreviews.has(id);
+  open ? openPreviews.add(id) : openPreviews.delete(id);
+  prev.classList.toggle('hidden', !open);
+  btn.textContent = open ? '▾ Ocultar ingredientes' : '▸ Ver ingredientes';
 });
 
 /* ---------- CALCULADORA ---------- */
 function renderCalc() {
   const sel = $('#calcFood'), prev = sel.value;
   sel.innerHTML = foodOptions();
-  if (prev && foodById(prev)) sel.value = prev;
+  if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+  syncUnit(sel);
   $('#calcList').innerHTML = state.calc.length
     ? state.calc.map(it => itemRowHTML(it, 'calc')).join('')
     : '<div class="empty">Añade alimentos arriba y ajusta los gramos.</div>';
@@ -371,7 +642,7 @@ function renderCalc() {
 function renderCalcTotals() { $('#calcTotals').innerHTML = totalsHTML(sum(state.calc)); }
 $('#calcAdd').addEventListener('click', () => {
   const foodId = $('#calcFood').value; if (!foodId) return;
-  state.calc.push({ id: uid(), foodId, g: num($('#calcG').value) || 100 });
+  state.calc.push(newItem(foodId, $('#calcG').value));
   save(); renderCalc();
 });
 $('#calcClear').addEventListener('click', () => {
@@ -379,39 +650,131 @@ $('#calcClear').addEventListener('click', () => {
 });
 
 /* ---------- PLANIFICADOR ---------- */
+let copyOpenFor = null; // comida con el panel "Copiar" abierto
+const cloneItems = items => items.map(i => ({ ...i, id: uid() }));
+const dayKcal = d => Math.round(sum(d.meals.flatMap(m => m.items)).k);
+
+function renderDays() {
+  const day = curDay();
+  $('#dayTabs').innerHTML = state.days.map(d => `
+    <button class="chip${d.id === day.id ? ' on' : ''}" data-day="${d.id}">${esc(d.name || 'Sin nombre')}<small>${dayKcal(d)} kcal</small></button>`).join('')
+    + '<button class="chip add" id="dayAdd" title="Añadir un día nuevo">+ Día</button>';
+  if (document.activeElement !== $('#dayName')) $('#dayName').value = day.name;
+  $('#dayDel').disabled = state.days.length <= 1;
+  $('#dayDel').style.opacity = state.days.length <= 1 ? .4 : 1;
+  $('#planDayTitle').textContent = day.name || 'este día';
+}
+
+// Opciones para copiar: comidas con alimentos de cualquier día, menos la propia
+function copyPanelHTML(meal, mealIdx) {
+  const day = curDay(), dayIdx = state.days.indexOf(day);
+  const groups = state.days.map((d, di) => {
+    const opts = d.meals.filter(m => m.id !== meal.id && m.items.length)
+      .map(m => `<option value="${d.id}|${m.id}">${esc(m.name || 'Comida')} · ${m.items.length} ${m.items.length === 1 ? 'elemento' : 'elementos'} · ${Math.round(sum(m.items).k)} kcal</option>`).join('');
+    return opts ? `<optgroup label="${esc(d.name || 'Día ' + (di + 1))}${di === dayIdx - 1 ? ' (anterior)' : ''}${d.id === day.id ? ' (este día)' : ''}">${opts}</optgroup>` : '';
+  }).join('');
+  if (!groups) return `<div class="copy-panel"><div class="empty">No hay otras comidas con alimentos para copiar.</div>
+    <button class="btn ghost small" data-copycancel>Cerrar</button></div>`;
+  return `<div class="copy-panel">
+    <div class="muted">Copiar a <b>${esc(meal.name || 'esta comida')}</b> desde:</div>
+    <select data-copysrc>${groups}</select>
+    <div class="row">
+      <button class="btn small" data-copydo="replace">Reemplazar</button>
+      <button class="btn ghost small" data-copydo="append">Añadir a lo que hay</button>
+      <button class="btn ghost small" data-copycancel>Cancelar</button>
+    </div></div>`;
+}
+// Por defecto propone la misma comida (misma posición) del día anterior
+function defaultCopySource(mealIdx) {
+  const idx = state.days.indexOf(curDay());
+  const order = [...state.days.slice(0, idx).reverse(), ...state.days.slice(idx + 1)];
+  for (const d of order) { const m = d.meals[mealIdx]; if (m && m.items.length) return `${d.id}|${m.id}`; }
+  return null;
+}
+
 function renderPlan() {
-  $('#mealsCount').textContent = state.meals.length;
-  $('#meals').innerHTML = state.meals.map((m, i) => `
+  renderDays();
+  const meals = curDay().meals;
+  $('#mealsCount').textContent = meals.length;
+  $('#meals').innerHTML = meals.map((m, i) => `
     <div class="card" data-meal="${m.id}">
       <div class="meal-head">
         <input value="${esc(m.name)}" data-mealname aria-label="Nombre de la comida" placeholder="Comida ${i + 1}">
+        <button class="btn ghost small" data-copyopen title="Copiar una comida de otro día">📋 Copiar</button>
       </div>
+      ${copyOpenFor === m.id ? copyPanelHTML(m, i) : ''}
       <div class="list">${m.items.length ? m.items.map(it => itemRowHTML(it, 'meal')).join('') : '<div class="empty">Sin alimentos todavía.</div>'}</div>
       <div class="meal-sum" data-mealsum>${macroLine(sum(m.items))}</div>
       <div class="add-row">
         <select data-mealfood>${foodOptions()}</select>
         <input type="number" min="0" step="any" inputmode="decimal" placeholder="g" value="100" data-mealg>
+        <span class="unit">g</span>
         <button class="btn" data-mealadd>+</button>
       </div>
     </div>`).join('');
+  if (copyOpenFor) {
+    const sel = document.querySelector(`[data-meal="${copyOpenFor}"] [data-copysrc]`);
+    const def = defaultCopySource(meals.findIndex(m => m.id === copyOpenFor));
+    if (sel && def) sel.value = def;
+  }
   renderPlanTotals();
   document.querySelectorAll('[data-target]').forEach(inp => inp.value = state.targets[inp.dataset.target] ?? '');
 }
 function renderPlanTotals() {
-  $('#planTotals').innerHTML = totalsHTML(sum(state.meals.flatMap(m => m.items)), state.targets);
+  $('#planTotals').innerHTML = totalsHTML(sum(curDay().meals.flatMap(m => m.items)), state.targets);
+  const chip = document.querySelector(`.chip[data-day="${state.dayId}"] small`);
+  if (chip) chip.textContent = `${dayKcal(curDay())} kcal`;
 }
 $('#mealsPlus').addEventListener('click', () => {
-  state.meals.push({ id: uid(), name: `Comida ${state.meals.length + 1}`, items: [] });
+  const meals = curDay().meals;
+  meals.push({ id: uid(), name: `Comida ${meals.length + 1}`, items: [] });
   save(); renderPlan();
 });
 $('#mealsMinus').addEventListener('click', () => {
-  if (state.meals.length <= 1) return;
-  const last = state.meals[state.meals.length - 1];
+  const meals = curDay().meals;
+  if (meals.length <= 1) return;
+  const last = meals[meals.length - 1];
   if (last.items.length && !confirm(`"${last.name}" tiene alimentos. ¿Eliminarla?`)) return;
-  state.meals.pop(); save(); renderPlan();
+  meals.pop(); save(); renderPlan();
 });
 $('#planClear').addEventListener('click', () => {
-  if (confirm('¿Vaciar los alimentos de todas las comidas?')) { state.meals.forEach(m => m.items = []); save(); renderPlan(); }
+  if (confirm(`¿Vaciar todas las comidas de "${curDay().name}"?`)) { curDay().meals.forEach(m => m.items = []); save(); renderPlan(); }
+});
+
+/* Días */
+function selectDay(id) { state.dayId = id; copyOpenFor = null; save(); renderPlan(); }
+$('#dayTabs').addEventListener('click', e => {
+  if (e.target.closest('#dayAdd')) {
+    // Día nuevo con las mismas comidas (nombres) que el actual, pero vacías
+    const day = { id: uid(), name: `Día ${state.days.length + 1}`, meals: curDay().meals.map(m => ({ id: uid(), name: m.name, items: [] })) };
+    state.days.push(day); selectDay(day.id);
+    document.querySelector(`.chip[data-day="${day.id}"]`).scrollIntoView({ inline: 'nearest', block: 'nearest' });
+    toast(`${day.name} creado`);
+    return;
+  }
+  const chip = e.target.closest('[data-day]');
+  if (chip) selectDay(chip.dataset.day);
+});
+$('#dayName').addEventListener('input', e => {
+  curDay().name = e.target.value;
+  save();
+  const chip = document.querySelector(`.chip[data-day="${state.dayId}"]`);
+  if (chip) chip.firstChild.textContent = e.target.value || 'Sin nombre';
+  $('#planDayTitle').textContent = e.target.value || 'este día';
+});
+$('#dayDup').addEventListener('click', () => {
+  const src = curDay();
+  const copy = { id: uid(), name: `${src.name} (copia)`, meals: src.meals.map(m => ({ id: uid(), name: m.name, items: cloneItems(m.items) })) };
+  state.days.splice(state.days.indexOf(src) + 1, 0, copy);
+  selectDay(copy.id); toast('Día duplicado');
+});
+$('#dayDel').addEventListener('click', () => {
+  if (state.days.length <= 1) return;
+  const d = curDay();
+  if (!confirm(`¿Borrar "${d.name}" y todas sus comidas?`)) return;
+  const idx = state.days.indexOf(d);
+  state.days.splice(idx, 1);
+  selectDay(state.days[Math.max(0, idx - 1)].id);
 });
 document.querySelectorAll('[data-target]').forEach(inp => inp.addEventListener('input', () => {
   state.targets[inp.dataset.target] = inp.value; save(); renderPlanTotals();
@@ -419,16 +782,29 @@ document.querySelectorAll('[data-target]').forEach(inp => inp.addEventListener('
 
 $('#meals').addEventListener('click', e => {
   const card = e.target.closest('[data-meal]'); if (!card) return;
-  const meal = state.meals.find(m => m.id === card.dataset.meal);
-  if (e.target.closest('[data-mealadd]')) {
+  const meal = curDay().meals.find(m => m.id === card.dataset.meal);
+  if (e.target.closest('[data-copyopen]')) {
+    copyOpenFor = copyOpenFor === meal.id ? null : meal.id; renderPlan();
+  } else if (e.target.closest('[data-copycancel]')) {
+    copyOpenFor = null; renderPlan();
+  } else if (e.target.closest('[data-copydo]')) {
+    const [dayId, mealId] = card.querySelector('[data-copysrc]').value.split('|');
+    const srcDay = state.days.find(d => d.id === dayId), src = srcDay && srcDay.meals.find(m => m.id === mealId);
+    if (!src) return;
+    const mode = e.target.closest('[data-copydo]').dataset.copydo;
+    if (mode === 'replace' && meal.items.length && !confirm(`Se sustituirá lo que hay ahora en "${meal.name}". ¿Continuar?`)) return;
+    meal.items = mode === 'replace' ? cloneItems(src.items) : meal.items.concat(cloneItems(src.items));
+    copyOpenFor = null; save(); renderPlan();
+    toast(`Copiado: ${src.name} de ${srcDay.name}`);
+  } else if (e.target.closest('[data-mealadd]')) {
     const foodId = card.querySelector('[data-mealfood]').value; if (!foodId) return;
-    meal.items.push({ id: uid(), foodId, g: num(card.querySelector('[data-mealg]').value) || 100 });
+    meal.items.push(newItem(foodId, card.querySelector('[data-mealg]').value));
     save(); renderPlan();
   }
 });
 $('#meals').addEventListener('input', e => {
   if (e.target.matches('[data-mealname]')) {
-    state.meals.find(m => m.id === e.target.closest('[data-meal]').dataset.meal).name = e.target.value;
+    curDay().meals.find(m => m.id === e.target.closest('[data-meal]').dataset.meal).name = e.target.value;
     save();
   }
 });
@@ -436,7 +812,8 @@ $('#meals').addEventListener('input', e => {
 /* ---------- Edición de gramos / borrar líneas (calc y comidas) ---------- */
 function findItem(row) {
   if (row.dataset.ctx === 'calc') return { list: state.calc, owner: state };
-  const meal = state.meals.find(m => m.id === row.closest('[data-meal]').dataset.meal);
+  if (row.dataset.ctx === 'recipe') return { list: draft.items, owner: draft };
+  const meal = curDay().meals.find(m => m.id === row.closest('[data-meal]').dataset.meal);
   return { list: meal.items, owner: meal };
 }
 document.addEventListener('input', e => {
@@ -444,8 +821,13 @@ document.addEventListener('input', e => {
   const row = e.target.closest('.item');
   const { list, owner } = findItem(row);
   const it = list.find(i => i.id === row.dataset.id);
-  it.g = num(e.target.value);
-  row.querySelector('.macros').innerHTML = macroLine(macrosFor(it.foodId, it.g));
+  if (it.recipeId) {
+    it.q = num(e.target.value);
+    const prev = row.nextElementSibling;
+    if (prev && prev.classList.contains('recipe-preview')) prev.innerHTML = recipePreviewHTML(recipeById(it.recipeId), it.q);
+  } else it.g = num(e.target.value);
+  row.querySelector('.macros').innerHTML = macroLine(itemMacros(it));
+  if (row.dataset.ctx === 'recipe') { renderDraftSum(); return; }
   if (row.dataset.ctx === 'calc') renderCalcTotals();
   else { row.closest('[data-meal]').querySelector('[data-mealsum]').innerHTML = macroLine(sum(owner.items)); renderPlanTotals(); }
   save();
@@ -454,16 +836,19 @@ document.addEventListener('click', e => {
   if (!e.target.closest('.item [data-del]')) return;
   const row = e.target.closest('.item');
   const { owner } = findItem(row);
-  if (row.dataset.ctx === 'calc') { state.calc = state.calc.filter(i => i.id !== row.dataset.id); save(); renderCalc(); }
+  openPreviews.delete(row.dataset.id);
+  if (row.dataset.ctx === 'recipe') { draft.items = draft.items.filter(i => i.id !== row.dataset.id); renderRecipeEditor(); }
+  else if (row.dataset.ctx === 'calc') { state.calc = state.calc.filter(i => i.id !== row.dataset.id); save(); renderCalc(); }
   else { owner.items = owner.items.filter(i => i.id !== row.dataset.id); save(); renderPlan(); }
 });
 
 /* ---------- Pestañas ---------- */
 function showTab(tab) {
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-  ['foods', 'calc', 'plan'].forEach(t => $('#tab-' + t).classList.toggle('hidden', t !== tab));
+  ['foods', 'calc', 'plan', 'log'].forEach(t => $('#tab-' + t).classList.toggle('hidden', t !== tab));
   try { localStorage.setItem(KEY + '-tab', tab); } catch (e) {}
   window.scrollTo(0, 0);
+  if (tab === 'log') renderChart();
 }
 document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
 
@@ -488,7 +873,242 @@ $('#fileImport').addEventListener('change', async e => {
   } catch (err) { alert('El archivo no es válido.'); }
 });
 
-function renderAll() { renderFoods(); renderCalc(); renderPlan(); }
+/* ---------- REGISTRO DE PESO ---------- */
+const DAYS_PER_MONTH = 30.44;
+const KCAL_PER_KG = 7700;
+const pad2 = n => String(n).padStart(2, '0');
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+const dayNum = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d) / 864e5; };
+const dayStr = n => new Date(n * 864e5).toISOString().slice(0, 10);
+const fmtDate = (s, opts = { day: 'numeric', month: 'short' }) => new Date(dayNum(s) * 864e5).toLocaleDateString('es-ES', { ...opts, timeZone: 'UTC' });
+const mondayOf = n => n - ((new Date(n * 864e5).getUTCDay() + 6) % 7);
+const fmtKg = n => n.toFixed(2).replace('.', ',');
+const fmtPct = (n, d = 2) => (n > 0 ? '+' : '') + n.toFixed(d).replace('.', ',') + '%';
+let wRange = 90;
+try { wRange = +(localStorage.getItem(KEY + '-wrange') ?? 90); } catch (e) {}
+
+function sortedWeights() {
+  return [...state.weights].sort((a, b) => a.date.localeCompare(b.date));
+}
+// Agrupa por semana (lunes a domingo)
+function weeklyAverages(ws) {
+  const map = new Map();
+  ws.forEach(w => {
+    const n = dayNum(w.date), key = mondayOf(n);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push({ n, kg: w.kg });
+  });
+  return [...map.entries()].sort((a, b) => a[0] - b[0]).map(([monday, arr]) => ({
+    monday,
+    avg: arr.reduce((s, x) => s + x.kg, 0) / arr.length,
+    x: arr.reduce((s, x) => s + x.n, 0) / arr.length, // posición en la gráfica
+    count: arr.length,
+  }));
+}
+// Tendencia (kg/día) con regresión lineal sobre los últimos 28 días de registros
+function trend(ws) {
+  if (ws.length < 2) return null;
+  const last = dayNum(ws[ws.length - 1].date);
+  const pts = ws.map(w => ({ x: dayNum(w.date), y: w.kg })).filter(p => p.x > last - 28);
+  if (pts.length < 3 || pts[pts.length - 1].x - pts[0].x < 7) return null;
+  const mx = pts.reduce((s, p) => s + p.x, 0) / pts.length, my = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+  let num_ = 0, den = 0;
+  pts.forEach(p => { num_ += (p.x - mx) * (p.y - my); den += (p.x - mx) ** 2; });
+  return { slope: num_ / den, mean: my, days: pts[pts.length - 1].x - pts[0].x };
+}
+function statusFor(pctMonth) {
+  const { min, max } = state.weightGoal;
+  if (pctMonth == null) return { cls: 'na', txt: '— Sin datos' };
+  if (pctMonth < min) return { cls: 'low', txt: '↓ Por debajo' };
+  if (pctMonth > max) return { cls: 'high', txt: '↑ Por encima' };
+  return { cls: 'ok', txt: '✓ En objetivo' };
+}
+
+function renderLog() {
+  const ws = sortedWeights();
+  const weeks = weeklyAverages(ws);
+  const { min, max } = state.weightGoal;
+  $('#gMin').value = min; $('#gMax').value = max;
+  $('#gMinTxt').textContent = String(min).replace('.', ','); $('#gMaxTxt').textContent = String(max).replace('.', ',');
+  if (!$('#wDate').value) $('#wDate').value = todayStr();
+
+  // Estadísticas
+  const t = trend(ws);
+  const curWeek = weeks[weeks.length - 1];
+  const pctMonth = t ? t.slope * DAYS_PER_MONTH / t.mean * 100 : null;
+  const st = statusFor(pctMonth);
+  const base = curWeek ? curWeek.avg : null;
+  $('#wStats').innerHTML = `
+    <div class="tot"><div class="v">${ws.length ? fmtKg(ws[ws.length - 1].kg) : '—'}</div><div class="l">Último (kg)</div></div>
+    <div class="tot"><div class="v">${base ? fmtKg(base) : '—'}</div><div class="l">Media semana (kg)</div></div>
+    <div class="tot"><div class="v">${pctMonth == null ? '—' : fmtPct(pctMonth, 1)}</div><div class="l">Ritmo / mes</div></div>
+    <div class="tot"><div class="v" style="font-size:15px;line-height:28px">${base ? `${fmtKg(base * (1 + min / 100))}–${fmtKg(base * (1 + max / 100))}` : '—'}</div><div class="l">Meta en 1 mes (kg)</div></div>`;
+
+  // Consejo
+  let advice;
+  if (!ws.length) advice = 'Empieza registrando tu peso. Con unos días de datos te diré si vas al ritmo que quieres.';
+  else if (!t) advice = 'Sigue registrando. Necesito al menos 3 pesajes que abarquen una semana para calcular tu ritmo real.';
+  else {
+    const midPct = (min + max) / 2;
+    const targetSlope = t.mean * midPct / 100 / DAYS_PER_MONTH; // kg/día
+    const kcal = Math.round(Math.min(500, Math.abs(targetSlope - t.slope) * KCAL_PER_KG) / 50) * 50;
+    const gainMonth = t.slope * DAYS_PER_MONTH;
+    const ritmo = `Estás ${gainMonth >= 0 ? 'subiendo' : 'bajando'} unos <b>${fmtKg(Math.abs(gainMonth))} kg/mes</b> (${fmtPct(pctMonth, 1)}), según tus últimos ${Math.round(t.days) + 1} días.`;
+    if (st.cls === 'ok') advice = `<span class="status ok">✓ En objetivo</span> ${ritmo} Vas bien, mantén las calorías.`;
+    else if (st.cls === 'low') advice = `<span class="status low">↓ Por debajo</span> ${ritmo} Para acercarte al ${String(midPct).replace('.', ',')}%/mes, prueba a <b>subir unas ${kcal || 50} kcal/día</b>.`;
+    else advice = `<span class="status high">↑ Por encima</span> ${ritmo} Para no acumular grasa de más, prueba a <b>bajar unas ${kcal || 50} kcal/día</b>.`;
+    advice += '<div class="muted" style="margin-top:4px">Estimación orientativa (≈7700 kcal por kg). Haz cambios pequeños y revisa a las 2 semanas.</div>';
+  }
+  $('#wAdvice').innerHTML = advice;
+
+  // Tabla semanal (más reciente arriba)
+  const wkRate = r => r / (DAYS_PER_MONTH / 7); // %/mes -> %/semana
+  $('#wWeeks').innerHTML = weeks.length ? `
+    <p class="muted" style="margin:0 0 6px">Objetivo semanal: ${fmtPct(wkRate(min))} a ${fmtPct(wkRate(max))} respecto a la semana anterior.</p>
+    <table class="weeks"><thead><tr><th>Semana</th><th class="r">Media</th><th class="r">Cambio</th><th class="r">Estado</th></tr></thead><tbody>
+    ${weeks.map((w, i) => {
+      const prev = weeks[i - 1];
+      const gap = prev ? (w.monday - prev.monday) / 7 : 0;
+      const pct = prev ? (w.avg / prev.avg - 1) * 100 : null;
+      const s = pct == null ? { cls: 'na', txt: '—' } : statusFor(pct / gap * DAYS_PER_MONTH / 7);
+      return `<tr>
+        <td>${fmtDate(dayStr(w.monday))}<div class="muted" style="font-size:11px">${w.count} ${w.count === 1 ? 'día' : 'días'}</div></td>
+        <td class="r"><b>${fmtKg(w.avg)}</b> kg</td>
+        <td class="r">${prev ? `${(w.avg - prev.avg >= 0 ? '+' : '') + fmtKg(w.avg - prev.avg)} kg<div class="muted" style="font-size:11px">${fmtPct(pct)}</div>` : '—'}</td>
+        <td class="r"><span class="status ${s.cls}">${s.txt}</span></td></tr>`;
+    }).reverse().join('')}
+    </tbody></table>` : '<div class="empty">Aún no hay registros.</div>';
+
+  // Lista de registros
+  $('#wCount').textContent = `(${ws.length})`;
+  $('#wList').innerHTML = ws.length ? [...ws].reverse().map(w => `
+    <div class="item" data-wdate="${w.date}">
+      <div class="name"><b>${fmtDate(w.date, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</b></div>
+      <span>${fmtKg(w.kg)} kg</span>
+      <button class="icon" data-wdel title="Borrar">✕</button>
+    </div>`).join('') : '<div class="empty">Sin registros.</div>';
+
+  document.querySelectorAll('#wRange button').forEach(b => b.classList.toggle('on', +b.dataset.r === wRange));
+  renderChart();
+}
+
+function renderChart() {
+  const box = $('#wChart');
+  if (!box || !box.offsetParent) return; // pestaña oculta: se dibuja al abrirla
+  const all = sortedWeights();
+  if (!all.length) { box.innerHTML = '<div class="empty">La gráfica aparecerá cuando registres tu peso.</div>'; return; }
+
+  const lastN = dayNum(all[all.length - 1].date);
+  const fromN = Math.max(dayNum(all[0].date), wRange ? lastN - wRange + 1 : -Infinity);
+  const ws = all.filter(w => dayNum(w.date) >= fromN);
+  const weeks = weeklyAverages(all).filter(w => w.x >= fromN - 3);
+  const { min, max } = state.weightGoal;
+
+  // Rango objetivo: parte de la primera media semanal visible
+  const w0 = weeks[0] || { x: dayNum(ws[0].date), avg: ws[0].kg };
+  const endN = Math.max(lastN + 7, w0.x + 14);
+  const bandAt = (n, pct) => w0.avg * Math.pow(1 + pct / 100, (n - w0.x) / DAYS_PER_MONTH);
+
+  const W = box.clientWidth, H = W < 500 ? 220 : 280;
+  const m = { t: 12, r: 12, b: 26, l: 40 };
+  const x0 = Math.min(fromN, w0.x), x1 = endN;
+  const ys = [...ws.map(w => w.kg), ...weeks.map(w => w.avg), bandAt(x1, max), bandAt(x0, min)];
+  let yMin = Math.min(...ys), yMax = Math.max(...ys);
+  const padY = Math.max(0.3, (yMax - yMin) * 0.12);
+  yMin -= padY; yMax += padY;
+  const sx = n => m.l + (n - x0) / Math.max(1, x1 - x0) * (W - m.l - m.r);
+  const sy = v => m.t + (yMax - v) / (yMax - yMin) * (H - m.t - m.b);
+
+  // Ejes
+  const step = [0.1, 0.2, 0.25, 0.5, 1, 2, 5, 10].find(s => (yMax - yMin) / s <= 5) || 20;
+  const yTicks = [];
+  for (let v = Math.ceil(yMin / step) * step; v <= yMax; v += step) yTicks.push(v);
+  const span = x1 - x0, nX = W < 500 ? 4 : 6;
+  const xTicks = Array.from({ length: nX }, (_, i) => Math.round(x0 + span * (i + 0.5) / nX));
+
+  // Banda objetivo
+  const bandPts = [];
+  for (let i = 0; i <= 30; i++) bandPts.push(w0.x + (x1 - w0.x) * i / 30);
+  const band = bandPts.map(n => `${sx(n)},${sy(bandAt(n, max))}`).join(' ') + ' ' +
+    [...bandPts].reverse().map(n => `${sx(n)},${sy(bandAt(n, min))}`).join(' ');
+
+  const weekPath = weeks.map((w, i) => `${i ? 'L' : 'M'}${sx(w.x)},${sy(w.avg)}`).join('');
+
+  box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Gráfica de peso">
+    <g class="grid">${yTicks.map(v => `<line x1="${m.l}" x2="${W - m.r}" y1="${sy(v)}" y2="${sy(v)}"/>`).join('')}</g>
+    <g class="axis">
+      ${yTicks.map(v => `<text x="${m.l - 6}" y="${sy(v) + 4}" text-anchor="end">${(+v.toFixed(2)).toString().replace('.', ',')}</text>`).join('')}
+      ${xTicks.map(n => `<text x="${sx(n)}" y="${H - 6}" text-anchor="middle">${fmtDate(dayStr(n))}</text>`).join('')}
+    </g>
+    <polygon points="${band}" fill="var(--accent)" opacity=".13"/>
+    <line x1="${sx(lastN)}" x2="${sx(lastN)}" y1="${m.t}" y2="${H - m.b}" stroke="var(--border)" stroke-dasharray="3 3"/>
+    ${ws.map(w => `<circle cx="${sx(dayNum(w.date))}" cy="${sy(w.kg)}" r="3.5" fill="var(--muted)" opacity=".55"/>`).join('')}
+    <path d="${weekPath}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${weeks.map(w => `<circle cx="${sx(w.x)}" cy="${sy(w.avg)}" r="4" fill="var(--accent)" stroke="var(--card)" stroke-width="2"/>`).join('')}
+    <g id="wHover" style="display:none">
+      <line y1="${m.t}" y2="${H - m.b}" stroke="var(--muted)" stroke-width="1"/>
+      <circle r="5" fill="var(--text)" stroke="var(--card)" stroke-width="2"/>
+    </g>
+  </svg><div class="chart-tip hidden" id="wTip"></div>`;
+
+  // Tooltip al pasar el ratón / tocar
+  const svg = box.querySelector('svg'), hover = box.querySelector('#wHover'), tip = box.querySelector('#wTip');
+  const weekOf = n => weeklyAverages(all).find(w => w.monday === mondayOf(n));
+  const move = ev => {
+    const rect = svg.getBoundingClientRect();
+    const px = (ev.clientX - rect.left) * (W / rect.width);
+    let best = null, bd = Infinity;
+    ws.forEach(w => { const d = Math.abs(sx(dayNum(w.date)) - px); if (d < bd) { bd = d; best = w; } });
+    if (!best || bd > 40) return hide();
+    const cx = sx(dayNum(best.date)), cy = sy(best.kg);
+    hover.style.display = '';
+    hover.querySelector('line').setAttribute('x1', cx); hover.querySelector('line').setAttribute('x2', cx);
+    hover.querySelector('circle').setAttribute('cx', cx); hover.querySelector('circle').setAttribute('cy', cy);
+    const wk = weekOf(dayNum(best.date));
+    tip.innerHTML = `<b>${fmtDate(best.date, { weekday: 'short', day: 'numeric', month: 'short' })}</b><br>${fmtKg(best.kg)} kg<br><span class="muted">Media semana: ${fmtKg(wk.avg)} kg</span>`;
+    tip.classList.remove('hidden');
+    const left = cx / W * rect.width;
+    tip.style.left = Math.min(rect.width - tip.offsetWidth / 2, Math.max(tip.offsetWidth / 2, left)) + 'px';
+    tip.style.top = Math.max(tip.offsetHeight, cy / H * rect.height - 10) + 'px';
+  };
+  const hide = () => { hover.style.display = 'none'; tip.classList.add('hidden'); };
+  svg.addEventListener('pointermove', move);
+  svg.addEventListener('pointerdown', move);
+  svg.addEventListener('pointerleave', hide);
+}
+
+$('#wForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const date = $('#wDate').value, kg = num($('#wKg').value);
+  if (!date || !kg) return;
+  const existing = state.weights.find(w => w.date === date);
+  if (existing) existing.kg = kg; else state.weights.push({ date, kg });
+  $('#wKg').value = '';
+  save(); renderLog(); toast(existing ? 'Registro actualizado' : 'Peso guardado');
+});
+$('#wList').addEventListener('click', e => {
+  if (!e.target.closest('[data-wdel]')) return;
+  const date = e.target.closest('[data-wdate]').dataset.wdate;
+  if (!confirm(`¿Borrar el registro del ${fmtDate(date)}?`)) return;
+  state.weights = state.weights.filter(w => w.date !== date);
+  save(); renderLog();
+});
+$('#wRange').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  wRange = +b.dataset.r;
+  try { localStorage.setItem(KEY + '-wrange', wRange); } catch (err) {}
+  renderLog();
+});
+['#gMin', '#gMax'].forEach(sel => $(sel).addEventListener('change', () => {
+  let a = num($('#gMin').value), b = num($('#gMax').value);
+  if (a > b) [a, b] = [b, a];
+  state.weightGoal = { min: a, max: b };
+  save(); renderLog();
+}));
+let resizeT;
+window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(renderChart, 150); });
+
+function renderAll() { renderFoods(); renderRecipes(); renderCalc(); renderPlan(); renderLog(); }
 renderAll();
 try { showTab(localStorage.getItem(KEY + '-tab') || 'foods'); } catch (e) { showTab('foods'); }
 
